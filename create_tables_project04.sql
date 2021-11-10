@@ -87,7 +87,7 @@ CREATE TABLE [dbo].[EMPLOYEE_TYPE](
    [EmployeeTypeID] [int] NOT NULL IDENTITY(1,1) PRIMARY KEY,
    [EmpoyeeTypeName] [varchar](25) NOT NULL,
    [EmployeeTypeDescription] [varchar](300) NOT NULL,
-   [WagePerHour] [Decimal(5,2)] NOT NULL
+   [WagePerHour] [Decimal(19,4)] NOT NULL
 ) ON [PRIMARY]
 GO
 
