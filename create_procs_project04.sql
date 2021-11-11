@@ -31,3 +31,60 @@ GO
 -- insertIntoOrder (needs getEmployeeID)
 
 -- insertDrinkOrder (needs getOrderID?, needs getSizeID)
+
+
+-- getToppingTypeID
+CREATE PROCEDURE getToppingTypeID
+    @ToppingTypeName varchar(100),
+    @TID int OUTPUT
+AS
+SET @TID = (SELECT ToppingTypeID FROM TOPPING_TYPE WHERE ToppingTypeName = @ToppingTypeName)
+GO
+
+-- getToppingID 
+CREATE PROCEDURE getToppingID
+    @ToppingName varchar(100),
+    @ToppingTypeName varchar(100), 
+    @TID int OUTPUT
+AS
+DECLARE @TTID int 
+
+EXEC getToppingTypeID
+@ToppingTypeName = @ToppingTypeName,
+@TID = @TTID OUTPUT 
+IF @TTID IS NULL 
+    BEGIN
+        PRINT 'topping type does not exist';
+        THROW 55555, 'topping type id is null', 11;
+    END 
+
+SET @TID = (SELECT ToppingID FROM TOPPING WHERE ToppingName = @ToppingName AND ToppingTypeID = @TTID)
+GO
+
+-- INSERT TOPPING (Lauren)
+CREATE PROCEDURE insertToppingID
+    @ToppingName varchar(100),
+    @ToppingTypeName varchar(100),
+    @ToppingTypeDescription varchar(300)
+AS
+DECLARE @TTID int 
+
+BEGIN TRAN T1 
+    INSERT INTO TOPPING_TYPE(ToppingTypeName, ToppingTypeDescription)
+    VALUES (@ToppingName, @ToppingTypeName)
+
+    SET @TTID = SCOPE_IDENTITY()
+
+
+    INSERT INTO TOPPING(ToppingTypeID, ToppingName)
+    VALUES (@TTID, @ToppingName)
+
+IF @@ERROR <> 0 
+        BEGIN 
+            PRINT 'failed to insert';
+            THROW 55555, 'failed to insert values', 11; 
+        END 
+    ELSE 
+        COMMIT T1 
+
+-- Insert Shift (Lauren)
