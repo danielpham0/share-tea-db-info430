@@ -12,7 +12,7 @@ IF EXISTS (SELECT *
                 JOIN DRINK D on DO.DrinkID = D.DrinkID
                 JOIN DRINK_TYPE DT on D.DrinkTypeID = DT.DrinkTypeID
             WHERE DT.DrinkTypeName = 'Signature'
-            AND C.DOB > DATEADD(YEAR, -21, GETDATE()))
+            AND C.CustomerDOB > DATEADD(YEAR, -21, GETDATE()))
             BEGIN
                 SET @RET = 1
             END
