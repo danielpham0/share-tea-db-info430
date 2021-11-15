@@ -133,6 +133,122 @@ GO
 --         COMMIT TRAN T1
 -- GO
 
+-- getMeasurementID
+CREATE PROCEDURE getMeasurementID
+    @MName varchar(50),
+    @MID int OUTPUT
+AS
+SET @MID = (SELECT MeasurementID FROM MEASUREMENT WHERE MeasurementName = @MName)
+GO
+
+-- getIngredientID
+CREATE PROCEDURE getIngredientID
+    @IName varchar(50),
+    @IID int OUTPUT
+AS
+SET @IID = (SELECT IngredientID FROM INGREDIENT WHERE IngredientName = @IName)
+GO
+
+-- getAllergyID
+CREATE PROCEDURE getAllergyID
+    @AName varchar(50),
+    @AID int OUTPUT
+AS
+SET @AID = (SELECT AllergyID FROM ALLERGY WHERE AllergyName = @AName)
+GO
+
+-- insertDrinkIngredient
+CREATE PROCEDURE insertDrinkIngredient
+    @D_Name varchar(50),
+    @M_Name varchar(50),
+    @I_Name varchar(50),
+    @Qty decimal(7,2)
+AS
+DECLARE @D_ID int, @M_ID int, @I_ID int
+
+EXEC getDrinkID
+    @DName = @D_Name,
+    @DID = @D_ID OUTPUT
+
+    IF @D_ID IS NULL
+        BEGIN
+            PRINT '@D_ID cannot be NULL';
+            THROW 99999, 'NULL value not allowed', 1;
+        END
+
+EXEC getMeasurementID
+    @MName = @M_Name,
+    @MID = @M_ID OUTPUT
+
+    IF @M_ID IS NULL
+        BEGIN
+            PRINT '@M_ID cannot be NULL';
+            THROW 99999, 'NULL value not allowed', 1;
+        END
+
+EXEC getIngredientID
+    @IName = @I_Name,
+    @IID = @I_ID OUTPUT
+
+    IF @I_ID IS NULL
+        BEGIN
+            PRINT '@I_ID cannot be NULL';
+            THROW 99999, 'NULL value not allowed', 1;
+        END
+
+BEGIN TRAN T1
+    INSERT INTO DRINK_INGREDIENT (DrinkID, MeasurementID, IngredientID, Quantity)
+    VALUES (@D_ID, @M_ID, @I_ID, @Qty)
+
+    IF ERROR <> 0
+        BEGIN
+            PRINT 'There has been an error when inserting. Now terminating...'
+            ROLLBACK TRAN T1
+        END
+    ELSE
+        COMMIT TRAN T1
+GO
+
+-- insertIngredientAllergy
+CREATE PROCEDURE insertIngredientAllergy
+    @I_Name varchar(50),
+    @A_Name varchar(50)
+AS
+DECLARE @I_ID int, @A_ID int
+
+EXEC getIngredientID
+    @IName = @I_Name,
+    @IID = @I_ID OUTPUT
+
+    IF @I_ID IS NULL
+        BEGIN
+            PRINT '@I_ID cannot be NULL';
+            THROW 99999, 'NULL value not allowed', 1;
+        END
+
+EXEC getAllergyID
+    @AName = @A_Name,
+    @AID = @A_ID OUTPUT
+
+    IF @A_ID IS NULL
+        BEGIN
+            PRINT '@A_ID cannot be NULL';
+            THROW 99999, 'NULL value not allowed', 1;
+        END
+
+BEGIN TRAN T1
+    INSERT INTO INGREDIENT_ALLERGY (IngredientID, AllergyID)
+    VALUES (@I_ID, @A_ID)
+
+    IF ERROR <> 0
+        BEGIN
+            PRINT 'There has been an error when inserting. Now terminating...'
+            ROLLBACK TRAN T1
+        END
+    ELSE
+        COMMIT TRAN T1
+GO
+
 -- getToppingTypeID
 CREATE PROCEDURE getToppingTypeID
     @ToppingTypeName varchar(100),
