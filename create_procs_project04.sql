@@ -1,11 +1,11 @@
-DROP PROCEDURE IF EXISTS getDrinkTypeID
+DROP PROCEDURE IF EXISTS getDrinkTypeID, getDrinkID, getCustomerID, insertIntoDrink
 GO
 -- getDrinkTypeID
 CREATE PROCEDURE getDrinkTypeID
     @DTypeName varchar(50),
     @DTypeID int OUTPUT
 AS
-SET @DTypeID = (SELECT DrinkTypeID FROM DrinkType WHERE DrinkTypeName = @DTypeName)
+SET @DTypeID = (SELECT DrinkTypeID FROM DRINK_TYPE WHERE DrinkTypeName = @DTypeName)
 GO
 
 -- getDrinkID

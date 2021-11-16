@@ -14,6 +14,67 @@ INSERT INTO DRINK_TYPE (DrinkTypeName, DrinkTypeDescription) VALUES
     ('Brewed Tea', 'A hot drink made by infusing the dried crushed leaves of the tea plant in boiling water.'), 
     ('Ice Blended', 'Drinks with traditional flavors that are blended with ice to make a slush.');
 
+-- Populate Drink
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Fruit Tea',
+    @DrinkName = 'Kiwi Fruit Tea'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Fruit Tea',
+    @DrinkName = 'Passionfruit, Orange, and Grapefruit Tea'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Fruit Tea',
+    @DrinkName = 'Wintermelon Tea'
+
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Milk Tea',
+    @DrinkName = 'Classic Milk Tea'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Milk Tea',
+    @DrinkName = 'Okinawa Milk Tea'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Milk Tea',
+    @DrinkName = 'Hokkaido Milk Tea'
+
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Fresh Milk',
+    @DrinkName = 'Fresh Milk Tea'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Fresh Milk',
+    @DrinkName = 'Matcha with Fresh Milk'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Fresh Milk',
+    @DrinkName = 'Cocoa Lover'
+
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Signature',
+    @DrinkName = 'Lime Mojito'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Signature',
+    @DrinkName = 'Mango Mojito'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Signature',
+    @DrinkName = 'Peach Mojito'
+
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Brewed Tea',
+    @DrinkName = 'Classic Black Tea'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Brewed Tea',
+    @DrinkName = 'Classic Green Tea'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Brewed Tea',
+    @DrinkName = 'Classic Oolong Tea'
+
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Ice Blended',
+    @DrinkName = 'Taro Ice Blended'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Ice Blended',
+    @DrinkName = 'Matcha Red Bean Ice Blended'
+EXEC insertIntoDrink
+    @DrinkTypeName = 'Ice Blended',
+    @DrinkName = 'Thai Tea Ice Blended'
+
 -- Populate Topping_Type
 INSERT INTO TOPPING_TYPE (ToppingTypeName, ToppingTypeDescription) VALUES 
     ('Jelly', 'A squishy topping, perfect for any fruit teas'),
