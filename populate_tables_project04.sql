@@ -66,15 +66,15 @@ INSERT INTO MEASUREMENT (MeasurementName) VALUES
 
 -- Didn't finish bc laptop is dying :(
 INSERT INTO ALLERGY (AllergyName, AllergyDescription) VALUES
-    ('Dairy', 'milk, butter, etc. I get it'), 
+    ('Dairy', 'milk, cream, butter, etc. I get it'), 
     ('Eggs', 'no eggs for you'),
     ('Kiwi', 'kiwi is also a bird'),
     ('Mango', 'they have hairy pits'),
     ('Peach', 'peach butt'),
     ('Strawberry', 'yummy'),
-    ('Lime'),
-    ('Lemon'),
-    ('Orange'),
-    ('Grapefruit'),
-    ('Taro'),
-    ('Lychee')
+    ('Lime', 'sour'),
+    ('Lemon', 'also sour'),
+    ('Orange', 'not as sour'),
+    ('Grapefruit', 'sour and bitter'),
+    ('Taro', 'purple'),
+    ('Lychee', 'cool-looking')
