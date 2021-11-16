@@ -30,7 +30,6 @@ INSERT INTO SIZE (SizeName, SizeDescription) VALUES
     ('Jumbo', '36oz')
 
 INSERT INTO GENDER (GenderName) VALUES 
-    ('Transgender'), 
     ('Male'), 
     ('Female'), 
     ('Non-binary'), 
@@ -64,7 +63,35 @@ INSERT INTO MEASUREMENT (MeasurementName) VALUES
     ('Pints'),
     ('Quarts')
 
--- Didn't finish bc laptop is dying :(
+INSERT INTO INGREDIENT (IngredientName) VALUES
+    ('Milk'),
+    ('Black Tea'),
+    ('Green Tea'),
+    ('Oolong Tea'),
+    ('Matcha'),
+    ('Thai Tea'),
+    ('Coffee'),
+    ('Red Bean'),
+    ('Wintermelon'),
+    ('Kiwi'),
+    ('Mango'),
+    ('Peach'),
+    ('Strawberry'),
+    ('Lime'),
+    ('Lemon'),
+    ('Orange'),
+    ('Grapefruit'),
+    ('Passion Fruit'),
+    ('Taro'),
+    ('Lychee'),
+    ('Ginger'),
+    ('Honey'),
+    ('Mint'),
+    ('Cocoa'),
+    ('Oreo'),
+    ('Sugar'),
+    ('Ice')
+
 INSERT INTO ALLERGY (AllergyName, AllergyDescription) VALUES
     ('Dairy', 'milk, cream, butter, etc. I get it'), 
     ('Eggs', 'no eggs for you'),
