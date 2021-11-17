@@ -40,3 +40,28 @@ GROUP BY (CASE
         THEN 'Frugal'
     ELSE 'Other'
         END)
+GO 
+
+-- How long is the average employee working each week and how much are they getting paid? - LAUREN 
+-- *** NEED TO CHECK. WAITING FOR TABLES TO BE ALL POPULATED 
+WITH 
+CTE_EmployeeTotalHours (totalHours, EmployeeID) AS (
+    SELECT SUM(ST.ShiftTypeEndTime - ST.ShiftTypeBeginTime) AS totalHours, E.EmployeeID
+    FROM Employee E 
+        JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
+        JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+        JOIN SHIFT_TYPE ST ON ST.ShiftTypeID = S.ShiftTypeID
+    GROUP BY E.EmployeeID),
+CTE_EmployeeTotalPayAndHours (totalPay, totalHours, EmployeeID) AS (
+    SELECT (ETH.totalHours * ET.WagePerHour) AS totalPay, ETH.totalHours, E.EmployeeID
+    FROM EMPLOYEE E 
+        JOIN EMPLOYEE_TYPE ET ON ET.EmployeeTypeID = E.EmployeeTypeID
+        JOIN CTE_EmployeeTotalHours ETH ON ETH.EmployeeID = E.EmployeeID 
+    GROUP BY E.EmployeeID, ETH.totalHours
+)
+SELECT S.StoreID, ST.StoreName, AVG(ET.totalHours) AS AverageHours, AVG(ET.totalPay) AS AveragePay
+FROM CTE_EmployeeTotalPayAndHours ET 
+    JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = ET.EmployeeID
+    JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+    JOIN STORE ST ON ST.StoreID = S.StoreID
+GROUP BY S.StoreID, ST.StoreName 
