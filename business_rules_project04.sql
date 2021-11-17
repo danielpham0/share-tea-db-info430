@@ -55,3 +55,45 @@ GO
 ALTER TABLE DrinkOrder with nocheck
 ADD CONSTRAINT CK_AgeForAlcohol
 CHECK(dbo.fn_checkAgeForAlchol() = 0)
+GO 
+
+-- Employee must be older than 16 to work
+CREATE FUNCTION dbo.fn_checkEmployeeMinimumAge()
+RETURNS INTEGER
+AS 
+BEGIN
+DECLARE @RET INTEGER = 0
+IF EXISTS (SELECT *
+            FROM Employee E 
+            -- Check if employee birthday is more than 16 years before today's date. 
+            WHERE E.EmployeeDOB <= DATEADD(YEAR, -16, GETDATE())) 
+            BEGIN
+                SET @RET = 1
+            END
+RETURN @RET
+END
+GO
+ALTER TABLE Employee
+ADD CONSTRAINT CK_EmployeeMinimumAge
+CHECK(dbo.fn_checkEmployeeMinimumAge() = 0)
+GO
+
+-- EmployeeTypeWagePerHour cannot be lower than $15/hour  
+CREATE FUNCTION dbo.fn_checkEmployeeMinimumWage()
+RETURNS INTEGER
+AS 
+BEGIN
+DECLARE @RET INTEGER = 0
+IF EXISTS (SELECT *
+            FROM EMPLOYEE_TYPE ET
+            -- Check if employee wage is at least 15 dollars an hour. 
+            WHERE ET.WagePerHour >= 15) 
+            BEGIN
+                SET @RET = 1
+            END
+RETURN @RET
+END
+GO
+ALTER TABLE EMPLOYEE_TYPE
+ADD CONSTRAINT CK_EmployeeMinimumWage
+CHECK(dbo.fn_checkEmployeeMinimumWage() = 0)
