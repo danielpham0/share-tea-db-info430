@@ -64,9 +64,9 @@ GO
 --     @CustLname varchar(25),
 --     @EmpFname varchar(25),
 --     @EmpLname varchar(25),
---     @OrdTotal money
+--     @OrdDate DATE
 --     AS
---     DECLARE @CustID INT, @EmpID INT, @OrdDate DATE = GETDATE()
+--     DECLARE @CustID INT, @EmpID INT
 --     EXEC getCustomerID
 --         @CFname = @CustFname,
 --         @CLname = @CustLname,
@@ -86,8 +86,8 @@ GO
 --         THROW 99999, '@EmpID did not return a proper value', 1;
 --     END
 --     BEGIN TRAN T1
---     INSERT INTO [ORDER] (CustomerID, EmployeeID, OrderDate, OrderTotal)
---         VALUES (@CustID, @EmpID, @OrdDate, @OrdTotal)
+--     INSERT INTO [ORDER] (CustomerID, EmployeeID, OrderDate)
+--         VALUES (@CustID, @EmpID, @OrdDate)
 --     IF @@ERROR <> 0
 --         BEGIN
 --             PRINT 'Terminating...'
@@ -96,7 +96,32 @@ GO
 --     ELSE
 --         COMMIT TRAN T1
 -- GO
-
+-- Synthetic transaction procedure for insertIntoOrderWrapper (needs insertIntoOrder to work)
+-- CREATE PROCEDURE insertIntoOrderWrapper
+-- @RUN INT
+-- AS
+-- DECLARE @CustID INT, @CustFname varchar(25), @CustLname varchar(25), 
+--     @EmpID INT, @EmpFname varchar(25), @EmpLname varchar(25), @OrdDate DATE, 
+--     @CustomerCount INT = (SELECT COUNT(*) FROM CUSTOMER), 
+--     @EmployeeCount INT = (SELECT COUNT(*) FROM EMPLOYEE)
+-- WHILE @Run > 0
+-- BEGIN
+--     SET @CustID = (SELECT RAND() * @CustomerCount + 1)
+--     SET @CustFname = (SELECT CustomerFname FROM CUSTOMER WHERE CustomerID = @CustID)
+--     SET @CustLname = (SELECT CustomerLname FROM CUSTOMER WHERE CustomerID = @CustID)
+--     SET @EmpID = (SELECT RAND() * @EmployeeCount + 1)
+--     SET @EmpFname = (SELECT EmployeeFname FROM EMPLOYEE WHERE EmployeeID = @EmpID)
+--     SET @EmpLname = (SELECT EmployeeLname FROM EMPLOYEE WHERE EmployeeID = @EmpID)
+--     SET @OrdDate = (SELECT DATEADD(Day, -(RAND() * 1825), GETDATE()))
+--     EXEC insertIntoOrder
+--         @CustFname = @CustFname,
+--         @CustLname = @CustLname,
+--         @EmpFname = @EmpFname,
+--         @EmpLname = @EmpLname,
+--         @OrdDate = @OrdDate
+--     SET @RUN = @RUN - 1
+-- END
+-- GO
 -- insertIntoDrinkOrder (needs getSizeID)
 -- CREATE PROCEDURE insertIntoDrinkOrder
 --     @DrinkName varchar(50),
