@@ -32,13 +32,18 @@ CREATE PROCEDURE insertIntoDrink
     @DrinkName varchar(25)
     AS
     DECLARE @DrinkTypeID INT
+    IF @DrinkTypeName IS NULL OR @DrinkName IS NULL
+    BEGIN 
+        PRINT 'Parameters for insert drink cannot be null.';
+        THROW 99999, 'Parameters for insertion were null', 1;
+    END
     EXEC getDrinkTypeID
         @DTypeName = @DrinkTypeName,
         @DTypeID = @DrinkTypeID OUTPUT
     IF (@DrinkTypeID IS NULL)
     BEGIN 
-        PRINT '@DrinkTypeID cannot be NULL!';
-        THROW 99999, '@DrinkTypeID did not return a proper value', 1;
+        PRINT 'Could not find a Drink ID from parameters!';
+        THROW 99999, '@DrinkTypeID returned null value.', 1;
     END
     BEGIN TRAN T1
     INSERT INTO DRINK (DrinkTypeID, DrinkName)
@@ -69,6 +74,12 @@ GO
 --     @EmpDOB date,
 --     @OrdDate DATE
 --     AS
+--     IF @CustFname IS NULL OR @CustLname IS NULL OR @CustDOB IS NULL OR @EmpFname IS NULL OR @EmpLname IS NULL OR
+--         @EmpDOB IS NULL OR @OrdDate IS NULL
+--     BEGIN 
+--         PRINT 'Parameters for insert order cannot be null.';
+--         THROW 99999, 'Parameters for insertion were null', 1;
+--     END
 --     DECLARE @CustID INT, @EmpID INT
 --     EXEC getCustomerID
 --         @CFname = @CustFname,
@@ -139,6 +150,11 @@ GO
 --     @Size varchar(25),
 --     @Quantity INT
 --     AS
+--     IF @DrinkName IS NULL OR @OrderID IS NULL OR @Size IS NULL OR @Quantity IS NULL
+--     BEGIN 
+--         PRINT 'Parameters for insert order cannot be null.';
+--         THROW 99999, 'Parameters for insertion were null', 1;
+--     END
 --     DECLARE @DrinkID INT, @SizeID INT
 --     EXEC getDrinkID
 --         @DName = @DrinkName,
