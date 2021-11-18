@@ -20,9 +20,10 @@ GO
 CREATE PROCEDURE getCustomerID
     @CFname varchar(50),
     @CLname varchar(50),
+    @CDOB date,
     @CID int OUTPUT
 AS
-SET @CID = (SELECT CustomerID FROM Customer WHERE CustomerFname = @CFname and CustomerLname = @CLname)
+SET @CID = (SELECT CustomerID FROM Customer WHERE CustomerFname = @CFname and CustomerLname = @CLname and CustomerDOB = @CDOB)
 GO
 
 -- insertIntoDrink
@@ -62,14 +63,17 @@ GO
 -- CREATE PROCEDURE insertIntoOrder
 --     @CustFname varchar(25),
 --     @CustLname varchar(25),
+--     @CustDOB date,
 --     @EmpFname varchar(25),
 --     @EmpLname varchar(25),
+--     @EmpDOB date,
 --     @OrdDate DATE
 --     AS
 --     DECLARE @CustID INT, @EmpID INT
 --     EXEC getCustomerID
 --         @CFname = @CustFname,
 --         @CLname = @CustLname,
+--         @CDOB = @CustDOB,
 --         @CID = @CustID OUTPUT
 --     IF (@CustID IS NULL)
 --     BEGIN 
@@ -79,6 +83,7 @@ GO
 --     EXEC getEmployeeID
 --         @EFname = @EmpFname,
 --         @ELname = @EmpLname,
+--         @EDOB = @EmpDOB,
 --         @EID = @EmpID OUTPUT
 --     IF (@EmpID IS NULL)
 --     BEGIN 
@@ -109,15 +114,20 @@ GO
 --     SET @CustID = (SELECT RAND() * @CustomerCount + 1)
 --     SET @CustFname = (SELECT CustomerFname FROM CUSTOMER WHERE CustomerID = @CustID)
 --     SET @CustLname = (SELECT CustomerLname FROM CUSTOMER WHERE CustomerID = @CustID)
+--     SET @CustDOB = (SELECT CustomerDOB FROM CUSTOMER WHERE CustomerID = @CustID)
 --     SET @EmpID = (SELECT RAND() * @EmployeeCount + 1)
 --     SET @EmpFname = (SELECT EmployeeFname FROM EMPLOYEE WHERE EmployeeID = @EmpID)
 --     SET @EmpLname = (SELECT EmployeeLname FROM EMPLOYEE WHERE EmployeeID = @EmpID)
+--     SET @EmpDOB = (SELECT CustomerDOB FROM CUSTOMER WHERE CustomerID = @CustID)
+--     -- Gets a date within the past 5 years
 --     SET @OrdDate = (SELECT DATEADD(Day, -(RAND() * 1825), GETDATE()))
 --     EXEC insertIntoOrder
 --         @CustFname = @CustFname,
 --         @CustLname = @CustLname,
+--         @CustDOB = @CustDOB,
 --         @EmpFname = @EmpFname,
 --         @EmpLname = @EmpLname,
+--         @EmpDOB = @EmpDOB,
 --         @OrdDate = @OrdDate
 --     SET @RUN = @RUN - 1
 -- END
