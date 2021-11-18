@@ -1,3 +1,4 @@
+Use INFO_430_Proj_04;
 DROP PROCEDURE IF EXISTS getDrinkTypeID, getDrinkID, getCustomerID, insertIntoDrink
 GO
 -- getDrinkTypeID

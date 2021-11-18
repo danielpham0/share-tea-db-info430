@@ -1,10 +1,5 @@
 USE INFO_430_Proj_04
 
--- Populate Customer
-INSERT INTO CUSTOMER (CustomerFname, CustomerLname, CustomerDOB)
-    SELECT TOP 20000 CustomerFname, CustomerLname, DateOfBirth
-    FROM Peeps.dbo.tblCUSTOMER
-
 -- Populate Drink_Type
 INSERT INTO DRINK_TYPE (DrinkTypeName, DrinkTypeDescription) VALUES 
     ('Fruit Tea', 'Fruit tea is an infusion made from cut pieces of fruit and plants, which can either be fresh or dried.'), 
@@ -166,3 +161,18 @@ INSERT INTO ALLERGY (AllergyName, AllergyDescription) VALUES
     ('Grapefruit', 'sour and bitter'),
     ('Taro', 'purple'),
     ('Lychee', 'cool-looking')
+
+-- Populate Customer (this takes about 8mins)
+-- Gets the first 2000 people from Peeps database // should swap to a insertIntoCustomer Proc, but need getGenderID
+DECLARE @PersonID INT = 2000, @CustFname varchar(25), @CustLname varchar(25), @CustDOB DATE,
+    @GenderID INT, @GenderCount INT = (SELECT COUNT(*) FROM GENDER)
+WHILE @PersonID > 0
+BEGIN
+    SET @CustFname = (SELECT CustomerFname FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @PersonID)
+    SET @CustLname = (SELECT CustomerLname FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @PersonID)
+    SET @CustDOB = (SELECT DateOfBirth FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @PersonID)
+    SET @GenderID = (SELECT @GenderCount * RAND() + 1)
+    INSERT INTO CUSTOMER (GenderID, CustomerFname, CustomerLname, CustomerDOB) VALUES
+        (@GenderID, @CustFname, @CustFname, @CustDOB)
+    SET @PersonID = @PersonID - 1
+END
