@@ -27,6 +27,14 @@ AS
 SET @CID = (SELECT CustomerID FROM Customer WHERE CustomerFname = @CFname and CustomerLname = @CLname and CustomerDOB = @CDOB)
 GO
 
+-- getSizeID
+CREATE PROCEDURE getSizeID
+    @SName varchar(50),
+    @SID int OUTPUT
+AS
+SET @SID = (SELECT SizeID FROM SIZE WHERE SizeName = @SName)
+GO
+
 -- insertIntoDrink
 CREATE PROCEDURE insertIntoDrink
     @DrinkTypeName varchar(25),
