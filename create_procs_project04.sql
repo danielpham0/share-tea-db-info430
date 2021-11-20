@@ -35,6 +35,176 @@ AS
 SET @SID = (SELECT SizeID FROM SIZE WHERE SizeName = @SName)
 GO
 
+-- getEmployeeID
+CREATE PROCEDURE getEmployeeID
+    @FName varchar(50),
+    @LName varchar(50),
+    @DOB date,
+    @EID int OUTPUT
+AS
+SET @EID = (SELECT EmployeeID FROM EMPLOYEE WHERE EmployeeFName = @FName AND EmployeeLName = @LName AND EmployeeDOB = @DOB)
+GO
+
+-- getStoreID
+CREATE PROCEDURE getStoreID
+    @SName varchar(50),
+    @SID int OUTPUT
+AS
+SET @SID = (SELECT StoreID FROM STORE WHERE StoreName = @SName)
+GO
+
+-- getEmployeeTypeID
+CREATE PROCEDURE getEmployeeTypeID
+    @ETypeName varchar(50),
+    @ETID int OUTPUT
+AS
+SET @ETID = (SELECT EmployeeTypeID FROM EMPLOYEE_TYPE WHERE EmployeeTypeName = @ETypeName)
+GO
+
+-- getGenderID
+CREATE PROCEDURE getGenderID
+    @GName varchar(50),
+    @GID int OUTPUT
+AS
+SET @GID = (SELECT GenderID FROM GENDER WHERE GenderName = @GName)
+GO
+
+-- getShiftTypeID
+CREATE PROCEDURE getShiftTypeID
+    @STypeName varchar(50),
+    @STID int OUTPUT
+AS
+SET @STID = (SELECT ShiftTypeID FROM SHIFT_TYPE WHERE ShiftTypeName = @STypeName)
+GO
+
+-- getShiftID
+CREATE PROCEDURE getShiftID
+    @SName varchar(50),
+    @STypeID int, 
+    @StoreID int, 
+    @Date date, 
+    @SID int OUTPUT
+AS
+SET @SID = (SELECT ShiftID FROM SHIFT WHERE ShiftTypeID = @STypeName AND StoreID = @StoreID AND [DateTime] = @Date)
+GO
+
+-- insertIntoEmployee
+CREATE PROCEDURE insertIntoEmployee
+    @FName varchar(100),
+    @LName varchar(100),
+    @DOB date,
+    @EmployeeTypeName varchar(50),
+    @GenderName varchar (50)
+    AS
+    DECLARE @EmployeeTypeID INT
+    DECLARE @GenderID INT
+    IF @EmployeeTypeName IS NULL OR @FName IS NULL OR @LName IS NULL OR @DOB IS NULL OR @GenderName IS NULL
+    BEGIN 
+        PRINT 'Parameters for insert Employee cannot be null.';
+        THROW 99999, 'Parameters for insertion were null', 1;
+    END
+
+    EXEC getEmployeeTypeID
+        @ETypeName = @EmployeeTypeName,
+        @EID = @EmployeeTypeID OUTPUT
+    IF (@EmployeeTypeID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a EmployeeType ID from parameters!';
+        THROW 99999, '@EmployeeTypeID returned null value.', 1;
+    END
+
+    EXEC getGenderID
+        @GName = @GenderName,
+        @GID = @GenderID OUTPUT
+    IF (@GenderID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a Gender ID from parameters!';
+        THROW 99999, '@GenderID returned null value.', 1;
+    END
+    
+    BEGIN TRAN T1
+    INSERT INTO EMPLOYEE (EmployeeTypeID, GenderID, EmployeeFName, EmployeeLName, EmployeeDOB)
+        VALUES (@EmployeeTypeID, @GenderID, @FName, @LName, @DOB)
+    IF @@ERROR <> 0
+        BEGIN
+            PRINT 'Terminating...'
+            ROLLBACK TRAN T1
+        END
+    ELSE
+        COMMIT TRAN T1
+GO
+
+-- insertIntoShiftEmployee
+CREATE PROCEDURE insertIntoShiftEmployee
+    @FName varchar(100),
+    @LName varchar(100),
+    @DOB date,
+    @StoreName varchar(50),
+    @ShiftTypeName varchar (50),
+    @Date date
+    AS
+    DECLARE @EmployeeID INT
+    DECLARE @ShiftID INT
+    DECLARE @StoreID INT
+    DECLARE @ShiftTypeID INT
+    IF @StoreName IS NULL OR @FName IS NULL OR @LName IS NULL OR @DOB IS NULL OR @ShiftTypeName IS NULL OR @Date IS NULL
+    BEGIN 
+        PRINT 'Parameters for insert ShiftEmployee cannot be null.';
+        THROW 99999, 'Parameters for insertion were null', 1;
+    END
+
+    EXEC getEmployeeID
+        @EmployeeFName = @FName,
+        @EmployeeLName = @LName,
+        @EmployeeDOB = @DOB, 
+        @EID = @EmployeeID OUTPUT
+    IF (@EmployeeID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a Employee ID from parameters!';
+        THROW 99999, '@EmployeeID returned null value.', 1;
+    END
+
+    EXEC getShiftTypeID
+        @STypeName = @ShiftTypeName,
+        @STID = @ShiftTypeID OUTPUT
+    IF (@ShiftTypeID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a ShiftType ID from parameters!';
+        THROW 99999, '@ShiftTypeID returned null value.', 1;
+    END
+
+    EXEC getStoreID
+        @SName = @StoreName,
+        @SID = @StoreID OUTPUT
+    IF (@StoreID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a Store ID from parameters!';
+        THROW 99999, '@StoreID returned null value.', 1;
+    END
+
+    EXEC getShiftID
+        @STypeID = @ShiftTypeID,
+        @StoreID = @StoreID,
+        @Date = @Date,
+        @SID = @ShiftID OUTPUT
+    IF (@ShiftID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a Shift ID from parameters!';
+        THROW 99999, '@ShiftID returned null value.', 1;
+    END
+    
+    BEGIN TRAN T1
+    INSERT INTO SHIFT_EMPLOYEE (EmployeeID, ShiftID)
+        VALUES (@EmployeeID, @ShiftID)
+    IF @@ERROR <> 0
+        BEGIN
+            PRINT 'Terminating...'
+            ROLLBACK TRAN T1
+        END
+    ELSE
+        COMMIT TRAN T1
+GO
+
 -- insertIntoDrink
 CREATE PROCEDURE insertIntoDrink
     @DrinkTypeName varchar(25),
