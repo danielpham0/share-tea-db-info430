@@ -167,6 +167,8 @@ INSERT INTO EMPLOYEE_TYPE (EmployeeTypeName, EmployeeTypeDescription, WagePerHou
     ('Kitchen Lead', 'The kitchen lead acts as the overseer of food preparation and cooking. They ensure that all staff are working efficiently. They maintain the cleanliness of workstations and monitor all supplies used.', 18.00),
     ('Barista', 'Preparing and serving hot and cold drinks such as coffee, tea, artisan and speciality beverages. Cleaning and sanitising work areas, utensils and equipment. Cleaning service and seating areas.', 15.00)
 
+
+
 -- Populate Customer (this takes about 8mins)
 -- Gets the first 2000 people from Peeps database // should swap to a insertIntoCustomer Proc, but need getGenderID
 DECLARE @PersonID INT = 2000, @CustFname varchar(25), @CustLname varchar(25), @CustDOB DATE,

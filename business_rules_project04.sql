@@ -1,3 +1,5 @@
+USE INFO_430_Proj_04;
+
 -- If the customer is below 21, do not allow them to order a specialty drink, as they are alcoholic. (DANIEL)
 -- Cannot add to the person's drink order if so.
 CREATE FUNCTION dbo.fn_checkAgeForAlchol()
@@ -97,3 +99,45 @@ GO
 ALTER TABLE EMPLOYEE_TYPE
 ADD CONSTRAINT CK_EmployeeMinimumWage
 CHECK(dbo.fn_checkEmployeeMinimumWage() = 0)
+GO
+
+-- A small drink cannot have any more than 3 toppings
+CREATE FUNCTION dbo.fn_checkNumToppingsSmall()
+RETURNS INTEGER
+AS 
+BEGIN
+DECLARE @RET INTEGER = 0
+IF EXISTS (SELECT DO.DrinkOrderID, COUNT(DrinkToppingOrderID)
+            FROM DRINK_ORDER DO 
+            JOIN DRINK_ORDER_TOPPING DOT ON DOT.DrinkOrderID = DO.DrinkOrderID
+            GROUP BY DrinkOrderID
+            HAVING COUNT(DrinkToppingOrderID) > 3)
+            BEGIN
+                SET @RET = 1
+            END
+RETURN @RET
+END
+GO
+ALTER TABLE DRINK_ORDER_TOPPING
+ADD CONSTRAINT CK_NumToppingsSmall
+CHECK(dbo.fn_checkNumToppingsSmall() = 0)
+GO
+
+-- OrderDate cannot be more than GETDATE()
+CREATE FUNCTION dbo.fn_checkOrderDate()
+RETURNS INTEGER
+AS 
+BEGIN
+DECLARE @RET INTEGER = 0
+IF EXISTS (SELECT *
+            FROM [ORDER]
+            WHERE OrderDate > GETDATE())
+            BEGIN
+                SET @RET = 1
+            END
+RETURN @RET
+END
+GO
+ALTER TABLE [ORDER]
+ADD CONSTRAINT CK_OrderDate
+CHECK(dbo.fn_checkOrderDate() = 0)
