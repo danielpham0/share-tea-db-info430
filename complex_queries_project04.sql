@@ -1,3 +1,5 @@
+USE INFO_430_Proj_04;
+
 -- Get the top 1 to 20 percentile of customers for customers, 
 -- above the age of 18, based on the total number of orders they have made. (DANIEL)
 WITH 
@@ -65,3 +67,20 @@ FROM CTE_EmployeeTotalPayAndHours ET
     JOIN SHIFT S ON S.ShiftID = SE.ShiftID
     JOIN STORE ST ON ST.StoreID = S.StoreID
 GROUP BY S.StoreID, ST.StoreName 
+
+-- For each employee in the barista employee type, what is the total amount of orders divided by the total hours worked, what is their average orders per hour. 
+
+SELECT E.EmployeeID, E.EmployeeFName, E.EmployeeLName, ET.EmployeeTypeName, (COUNT(O.OrderID) / SUM(DATEDIFF(HOUR, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime))) AS [Avg. Order Per Hour],
+    RANK() OVER(PARTITION BY E.EmployeeID ORDER BY (COUNT(O.OrderID) / SUM(DATEDIFF(HOUR, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime))) DESC) EmpAvgOrderPHour_Rank
+FROM EMPLOYEE E 
+JOIN EMPLOYEE_TYPE ET ON ET.EmployeeTypeID = E.EmployeeTypeID
+JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
+JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+JOIN SHIFT_TYPE ST ON ST.ShiftTypeID = S.ShiftTypeID
+JOIN ORDER O ON O.EmployeeID = E.EmployeeID
+WHERE ET.EmployeeTypeName = "Barista" 
+GROUP BY E.EmployeeID, E.EmployeeFName, E.EmployeeLName, ET.EmployeeTypeName
+ORDER BY EmpAvgOrderPHour_Rank ASC
+GO
+
+
