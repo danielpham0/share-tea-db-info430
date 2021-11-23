@@ -85,7 +85,7 @@ CREATE PROCEDURE getShiftID
     @Date date, 
     @SID int OUTPUT
 AS
-SET @SID = (SELECT ShiftID FROM SHIFT WHERE ShiftTypeID = @STypeName AND StoreID = @StoreID AND [DateTime] = @Date)
+SET @SID = (SELECT ShiftID FROM SHIFT WHERE ShiftTypeID = @STypeID AND StoreID = @StoreID AND [DateTime] = @Date)
 GO
 
 -- insertIntoEmployee
