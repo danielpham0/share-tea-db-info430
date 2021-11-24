@@ -1,4 +1,5 @@
 USE INFO_430_Proj_04;
+GO
 
 -- If the customer is below 21, do not allow them to order a specialty drink, as they are alcoholic. (DANIEL)
 -- Cannot add to the person's drink order if so.
@@ -141,3 +142,19 @@ GO
 ALTER TABLE [ORDER]
 ADD CONSTRAINT CK_OrderDate
 CHECK(dbo.fn_checkOrderDate() = 0)
+
+-- If the employee type is part-time, they should not work more than 20 hours a week. 
+
+CREATE FUNCTION dbo.fn_checkPartTimeHours
+RETURNS INTEGER
+AS
+BEGIN
+DECLARE @RET INTEGER = 0
+
+RETURN @RET
+END
+GO
+
+
+-- ShiftTypeClosingTime cannot be after StoreClosingHour
+

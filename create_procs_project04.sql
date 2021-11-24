@@ -37,12 +37,12 @@ GO
 
 -- getEmployeeID
 CREATE PROCEDURE getEmployeeID
-    @FName varchar(50),
-    @LName varchar(50),
-    @DOB date,
+    @EFname varchar(50),
+    @ELname varchar(50),
+    @EDOB date,
     @EID int OUTPUT
 AS
-SET @EID = (SELECT EmployeeID FROM EMPLOYEE WHERE EmployeeFName = @FName AND EmployeeLName = @LName AND EmployeeDOB = @DOB)
+SET @EID = (SELECT EmployeeID FROM EMPLOYEE WHERE EmployeeFName = @EFName AND EmployeeLName = @ELName AND EmployeeDOB = @EDOB)
 GO
 
 -- getStoreID
@@ -79,7 +79,6 @@ GO
 
 -- getShiftID
 CREATE PROCEDURE getShiftID
-    @SName varchar(50),
     @STypeID int, 
     @StoreID int, 
     @Date date, 
@@ -154,9 +153,9 @@ CREATE PROCEDURE insertIntoShiftEmployee
     END
 
     EXEC getEmployeeID
-        @EmployeeFName = @FName,
-        @EmployeeLName = @LName,
-        @EmployeeDOB = @DOB, 
+        @EFname = @FName,
+        @ELname = @LName,
+        @EDOB = @DOB, 
         @EID = @EmployeeID OUTPUT
     IF (@EmployeeID IS NULL)
     BEGIN 
@@ -430,7 +429,7 @@ BEGIN TRAN T1
     INSERT INTO DRINK_INGREDIENT (DrinkID, MeasurementID, IngredientID, Quantity)
     VALUES (@D_ID, @M_ID, @I_ID, @Qty)
 
-    IF ERROR <> 0
+    IF @@ERROR <> 0
         BEGIN
             PRINT 'There has been an error when inserting. Now terminating...'
             ROLLBACK TRAN T1
@@ -470,7 +469,7 @@ BEGIN TRAN T1
     INSERT INTO INGREDIENT_ALLERGY (IngredientID, AllergyID)
     VALUES (@I_ID, @A_ID)
 
-    IF ERROR <> 0
+    IF @@ERROR <> 0
         BEGIN
             PRINT 'There has been an error when inserting. Now terminating...'
             ROLLBACK TRAN T1
@@ -528,9 +527,10 @@ BEGIN TRAN T1
 IF @@ERROR <> 0 
         BEGIN 
             PRINT 'failed to insert';
-            THROW 55555, 'failed to insert values', 11; 
+            -- THROW 55555, 'failed to insert values', 11; 
+            ROLLBACK TRAN T1
         END 
     ELSE 
-        COMMIT T1 
+        COMMIT TRAN T1 
 
 -- Insert Shift (Lauren)
