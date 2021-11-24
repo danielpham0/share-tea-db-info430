@@ -11,7 +11,7 @@ DECLARE @RET INTEGER = 0
 IF EXISTS (SELECT *
             FROM CUSTOMER C
                 JOIN [ORDER] O on C.CustomerID = O.CustomerID
-                JOIN DRINK_ORDER DO on DO.OrderID = O.DrinkOrderID
+                JOIN DRINK_ORDER DO on DO.OrderID = O.OrderID
                 JOIN DRINK D on DO.DrinkID = D.DrinkID
                 JOIN DRINK_TYPE DT on D.DrinkTypeID = DT.DrinkTypeID
             WHERE DT.DrinkTypeName = 'Signature'
@@ -39,10 +39,10 @@ IF EXISTS (SELECT *
                 JOIN DRINK D on DO.DrinkID = D.DrinkID
                 JOIN DRINK_INGREDIENT DI on D.DrinkID = DI.DrinkID
                 JOIN INGREDIENT I on DI.IngredientID = I.IngredientID
-                JOIN INGREDIENT_ALLERGY IA on I.IngredientID = IA.IngredientIA
+                JOIN INGREDIENT_ALLERGY IA on I.IngredientID = IA.IngredientID
                 -- Gets allergies from ingredients
                 JOIN ALLERGY AllergyFromIngredient on IA.AllergyID = AllergyFromIngredient.AllergyID
-                JOIN [ORDER] O on DO.OrderID = O.DrinkOrderID
+                JOIN [ORDER] O on DO.OrderID = O.OrderID
                 JOIN CUSTOMER C on O.CustomerID = C.CustomerID
                 JOIN CUSTOMER_ALLERGY CA on C.CustomerID = CA.CustomerID
                 -- Gets allergies from customer
@@ -110,8 +110,8 @@ BEGIN
 DECLARE @RET INTEGER = 0
 IF EXISTS (SELECT DO.DrinkOrderID, COUNT(DrinkToppingOrderID)
             FROM DRINK_ORDER DO 
-            JOIN DRINK_ORDER_TOPPING DOT ON DOT.DrinkOrderID = DO.DrinkOrderID
-            GROUP BY DrinkOrderID
+            JOIN DRINK_TOPPING_ORDER DTO ON DTO.DrinkOrderID = DO.DrinkOrderID
+            GROUP BY DO.DrinkOrderID
             HAVING COUNT(DrinkToppingOrderID) > 3)
             BEGIN
                 SET @RET = 1
@@ -142,19 +142,50 @@ GO
 ALTER TABLE [ORDER]
 ADD CONSTRAINT CK_OrderDate
 CHECK(dbo.fn_checkOrderDate() = 0)
+GO
 
--- If the employee type is part-time, they should not work more than 20 hours a week. 
+-- ShiftTypeBeginTime cannot be before StoreOpeningTime
 
-CREATE FUNCTION dbo.fn_checkPartTimeHours
+CREATE FUNCTION dbo.fn_checkBeginTime()
 RETURNS INTEGER
 AS
 BEGIN
 DECLARE @RET INTEGER = 0
-
+IF EXISTS (SELECT *
+            FROM SHIFT_TYPE ST
+            JOIN SHIFT SH ON ST.ShiftTypeID = SH.ShiftTypeID
+            JOIN STORE S ON SH.StoreID = S.StoreID
+            WHERE ST.ShiftTypeBeginTime < S.StoreOpeningTime)
+    BEGIN
+        SET @RET = 1
+    END
 RETURN @RET
 END
 GO
+ALTER TABLE SHIFT_TYPE
+ADD CONSTRAINT CK_BeginTime
+CHECK(dbo.fn_checkBeginTime() = 0)
+GO
 
+-- ShiftTypeEndTime cannot be after StoreClosingTime
 
--- ShiftTypeClosingTime cannot be after StoreClosingHour
-
+CREATE FUNCTION dbo.fn_checkEndTime()
+RETURNS INTEGER
+AS
+BEGIN
+DECLARE @RET INTEGER = 0
+IF EXISTS (SELECT *
+            FROM SHIFT_TYPE ST
+            JOIN SHIFT SH ON ST.ShiftTypeID = SH.ShiftTypeID
+            JOIN STORE S ON SH.StoreID = S.StoreID
+            WHERE ST.ShiftTypeEndTime > S.StoreClosingTime)
+    BEGIN
+        SET @RET = 1
+    END
+RETURN @RET
+END
+GO
+ALTER TABLE SHIFT_TYPE
+ADD CONSTRAINT CK_EndTime
+CHECK(dbo.fn_checkEndTime() = 0)
+GO
