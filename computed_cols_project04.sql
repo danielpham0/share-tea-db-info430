@@ -30,3 +30,38 @@ GO
 ALTER TABLE DRINK_ORDER
 ADD TotalDrinkCost AS (dbo.fn_TotalDrinkCost (DrinkOrderID))
 GO
+
+-- Total employees working in a shift
+CREATE FUNCTION fn_TotalEmpShift (@PK INT)
+RETURNS INT
+AS
+BEGIN
+DECLARE @RET INT = (SELECT (COUNT(SE.EmployeeID)) 
+                        FROM SHIFT S 
+                        JOIN SHIFT_EMPLOYEE SE ON SE.ShiftID = S.ShiftID
+                        WHERE SE.ShiftID = @PK
+                        GROUP BY SE.ShiftID)
+RETURN @RET
+END
+GO
+ALTER TABLE [SHIFT]
+ADD TotalEmpShift AS (dbo.fn_TotalEmpShift (ShiftID))
+GO
+
+-- Total number of drinks ordered by a customer
+CREATE FUNCTION fn_TotalDrinksCustomer (@PK INT)
+RETURNS INT
+AS
+BEGIN
+DECLARE @RET INT = (SELECT (COUNT(DO.DrinkOrderID)) 
+                        FROM CUSTOMER C 
+                        JOIN ORDER O ON O.CustomerID = C.CustomerID
+                        JOIN DRINK_ORDER DO ON DO.OrderID = O.OrderID
+                        WHERE O.CustomerID = @PK
+                        GROUP BY O.CustomerID)
+RETURN @RET
+END
+GO
+ALTER TABLE [CUSTOMER]
+ADD TotalDrinksCustomer AS (dbo.fn_TotalDrinksCustomer (CustomerID))
+GO
