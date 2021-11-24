@@ -71,7 +71,7 @@ CREATE FUNCTION fn_TotalHoursEmployee (@PK INT)
 RETURNS INT
 AS
 BEGIN
-DECLARE @RET INT = (SELECT (SUM(ST.ShiftTypeEndTime - ST.ShiftTypeBeginTime))
+DECLARE @RET INT = (SELECT (SUM(DATEDIFF(HOUR, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime)))
                     FROM EMPLOYEE E
                     JOIN SHIFT_EMPLOYEE SE ON E.EmployeeID = SE.EmployeeID
                     JOIN SHIFT SH ON SE.ShiftID = SH.ShiftID
