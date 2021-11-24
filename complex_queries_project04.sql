@@ -82,5 +82,3 @@ WHERE ET.EmployeeTypeName = "Barista"
 GROUP BY E.EmployeeID, E.EmployeeFName, E.EmployeeLName, ET.EmployeeTypeName
 ORDER BY EmpAvgOrderPHour_Rank ASC
 GO
-
-

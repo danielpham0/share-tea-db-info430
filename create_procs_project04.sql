@@ -106,7 +106,7 @@ CREATE PROCEDURE insertIntoEmployee
 
     EXEC getEmployeeTypeID
         @ETypeName = @EmployeeTypeName,
-        @EID = @EmployeeTypeID OUTPUT
+        @ETID = @EmployeeTypeID OUTPUT
     IF (@EmployeeTypeID IS NULL)
     BEGIN 
         PRINT 'Could not find a EmployeeType ID from parameters!';
