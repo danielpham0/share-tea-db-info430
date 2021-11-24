@@ -10,7 +10,7 @@ AS (SELECT C.CustomerID, C.CustomerFname, C.CustomerLname,
 FROM CUSTOMER C
     JOIN [ORDER] O on C.CustomerID = O.CustomerID
     WHERE C.CustomerDOB > DATEADD(YEAR, -18, GETDATE())
-GROUP BY S.StudentID, S.StudentFname, S.StudentLname)
+GROUP BY C.CustomerID, C.CustomerFname, C.CustomerLname)
 SELECT * FROM RankedCustomerOrders WHERE OrderPercentile BETWEEN 1 AND 20 ORDER BY OrderPercentile
 
 -- Sort ordered drinks into cases based on number of toppings ordered and size
@@ -21,7 +21,7 @@ SELECT * FROM RankedCustomerOrders WHERE OrderPercentile BETWEEN 1 AND 20 ORDER 
 SELECT (CASE
     WHEN ToppingCount > 2 AND SizeName = 'Large'
         THEN 'Extravagant'
-    WHEN ToppingCount BETWEEN 1 AND 2 AND (Size = 'Large' or Size = 'Medium')
+    WHEN ToppingCount BETWEEN 1 AND 2 AND (SizeName = 'Large' or SizeName = 'Medium')
         THEN 'Average'
     WHEN ToppingCount < 1 AND (SizeName = 'Medium' or SizeName = 'Small')
         THEN 'Frugal'
