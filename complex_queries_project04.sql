@@ -9,7 +9,7 @@ AS (SELECT C.CustomerID, C.CustomerFname, C.CustomerLname,
     NTILE(100) OVER (ORDER BY COUNT(*) DESC) as OrderPercentile
 FROM CUSTOMER C
     JOIN [ORDER] O on C.CustomerID = O.CustomerID
-    WHERE C.CustomerDOB > DATEADD(YEAR, -18, GETDATE())
+    WHERE C.CustomerDOB < DATEADD(YEAR, -18, GETDATE())
 GROUP BY C.CustomerID, C.CustomerFname, C.CustomerLname)
 SELECT * FROM RankedCustomerOrders WHERE OrderPercentile BETWEEN 1 AND 20 ORDER BY OrderPercentile
 
@@ -18,27 +18,28 @@ SELECT * FROM RankedCustomerOrders WHERE OrderPercentile BETWEEN 1 AND 20 ORDER 
 -- 2) Between 1 or 2 toppings and size large or medium -- Average
 -- 4) No toppings and a size small or medium -- Frugal
 -- 5) Other
+
 SELECT (CASE
-    WHEN ToppingCount > 2 AND SizeName = 'Large'
+    WHEN ToppingCount >= 3 AND SizeName = 'Large'
         THEN 'Extravagant'
-    WHEN ToppingCount BETWEEN 1 AND 2 AND (SizeName = 'Large' or SizeName = 'Medium')
+    WHEN ToppingCount BETWEEN 2 AND 3 AND (SizeName = 'Large' or SizeName = 'Medium')
         THEN 'Average'
-    WHEN ToppingCount < 1 AND (SizeName = 'Medium' or SizeName = 'Small')
+    WHEN ToppingCount <= 1 AND (SizeName = 'Medium' or SizeName = 'Small')
         THEN 'Frugal'
     ELSE 'Other'
         END) AS LabelForDrinks, COUNT(*) AS NumberOfDrinks
 FROM
-(SELECT DO.DrinkOrderID, S.SizeName, COUNT(*) AS ToppingCount 
+(SELECT DO.DrinkOrderID, S.SizeName, COUNT(DTO.ToppingID) AS ToppingCount 
     FROM DRINK_ORDER DO 
     JOIN SIZE S ON DO.SizeID = S.SizeID
-    JOIN DRINK_TOPPING_ORDER DTO on DO.DrinkOrderID = DTO.DrinkOrderID
-    GROUP BY DO.DrinkOrderID) AS A
+    LEFT JOIN DRINK_TOPPING_ORDER DTO on DO.DrinkOrderID = DTO.DrinkOrderID
+    GROUP BY DO.DrinkOrderID, S.SizeName) AS A
 GROUP BY (CASE
-    WHEN ToppingCount > 2 AND SizeName = 'Large'
+    WHEN ToppingCount >= 3 AND SizeName = 'Large'
         THEN 'Extravagant'
-    WHEN ToppingCount BETWEEN 1 AND 2 AND (SizeName = 'Large' or SizeName = 'Medium')
+    WHEN ToppingCount BETWEEN 2 AND 3 AND (SizeName = 'Large' or SizeName = 'Medium')
         THEN 'Average'
-    WHEN ToppingCount < 1 AND (SizeName = 'Medium' or SizeName = 'Small')
+    WHEN ToppingCount <= 1 AND (SizeName = 'Medium' or SizeName = 'Small')
         THEN 'Frugal'
     ELSE 'Other'
         END)
@@ -127,3 +128,30 @@ SELECT *
 FROM #TempDrinkPopularityMonth
 WHERE DenseRankDrinkPopularity < 4
 ORDER BY [Month]
+-- In each season, what times of the day are the busiest in terms of the number of customer orders for each store?  (for increased staffing? ) (JONATHAN)
+
+SELECT StoreName, (CASE
+    WHEN MONTH(OrderDate) <= 2 OR MONTH(OrderDate) = 12
+        THEN 'Winter'
+    WHEN MONTH(OrderDate) <= 5 AND MONTH(OrderDate) >= 3
+        THEN 'Spring'
+    WHEN MONTH(OrderDate) <= 8 AND MONTH(OrderDate) >= 6
+        THEN 'Summer'
+    ELSE 'Fall'
+        END) AS Season, HOUR(OrderDate) AS TimeOfDay, COUNT(*) AS NumberOfOrders
+FROM [ORDER] O
+JOIN EMPLOYEE E ON E.EmployeeID = O.EmployeeID
+JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
+JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+JOIN STORE ST ON ST.StoreID = S.StoreID
+GROUP BY StoreName, (CASE
+    WHEN MONTH(OrderDate) <= 2 OR MONTH(OrderDate) = 12
+        THEN 'Winter'
+    WHEN MONTH(OrderDate) <= 5 AND MONTH(OrderDate) >= 3
+        THEN 'Spring'
+    WHEN MONTH(OrderDate) <= 8 AND MONTH(OrderDate) >= 6
+        THEN 'Summer'
+    ELSE 'Fall'
+        END), TimeOfDay
+ORDER BY NumberOfOrders DESC
+GO

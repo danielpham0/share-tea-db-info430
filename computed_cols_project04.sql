@@ -1,7 +1,6 @@
 USE INFO_430_Proj_04;
 GO
--- Total drink cost is a computed column (DANIEL) -- needs drink cost + topping cost 
--- question of where to put costs: size differences could make a difference as well
+-- Total drink cost is a computed column (DANIEL)
 CREATE FUNCTION fn_TotalDrinkCost (@PK INT)
 RETURNS MONEY
 AS
@@ -19,7 +18,7 @@ ALTER TABLE DRINK_ORDER
 ADD TotalDrinkCost AS (dbo.fn_TotalDrinkCost (DrinkOrderID))
 GO
 
--- Total order cost is a computed column (DANIEL) -- needs total drink cost to work properly
+-- Total order cost is a computed column (DANIEL)
 CREATE FUNCTION fn_TotalOrderCost (@PK INT)
 RETURNS MONEY
 AS
