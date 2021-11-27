@@ -27,6 +27,29 @@ ADD CONSTRAINT CK_AgeForAlcohol
 CHECK(dbo.fn_checkAgeForAlchol() = 0)
 GO 
 
+-- The number of employees for a morning shift cannot exceed 4 after 2018 at the ShareTea-04 branch
+CREATE FUNCTION dbo.fn_checkMorningShift()
+RETURNS INTEGER
+AS 
+BEGIN
+DECLARE @RET INTEGER = 0
+IF EXISTS (SELECT *
+            FROM SHIFT S
+                JOIN SHIFT_TYPE ST ON S.ShiftTypeID = ST.ShiftTypeID
+                JOIN STORE STO ON STO.StoreID = S.StoreID
+            WHERE ST.ShiftTypeName = 'Morning' AND S.TotalEmpShift > 4
+                AND YEAR(S.[DateTime]) > 2018 AND STO.StoreName = 'ShareTea-04')
+            BEGIN
+                SET @RET = 1
+            END
+RETURN @RET
+END
+GO
+ALTER TABLE SHIFT with nocheck
+ADD CONSTRAINT CK_MorningShift
+CHECK(dbo.fn_checkMorningShift() = 0)
+GO 
+
 -- Employee must be older than 16 to work
 CREATE FUNCTION dbo.fn_checkEmployeeMinimumAge()
 RETURNS INTEGER
