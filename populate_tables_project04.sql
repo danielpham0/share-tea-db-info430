@@ -1,9 +1,4 @@
-USE INFO_430_Proj_04
-
--- Populate Customer
-INSERT INTO CUSTOMER (CustomerFname, CustomerLname, CustomerDOB)
-    SELECT TOP 20000 CustomerFname, CustomerLname, DateOfBirth
-    FROM Peeps.dbo.tblCUSTOMER
+USE INFO_430_Proj_04;
 
 -- Populate Drink_Type
 INSERT INTO DRINK_TYPE (DrinkTypeName, DrinkTypeDescription) VALUES 
@@ -166,3 +161,68 @@ INSERT INTO ALLERGY (AllergyName, AllergyDescription) VALUES
     ('Grapefruit', 'sour and bitter'),
     ('Taro', 'purple'),
     ('Lychee', 'cool-looking')
+
+INSERT INTO EMPLOYEE_TYPE (EmployeeTypeName, EmployeeTypeDescription, WagePerHour) VALUES 
+    ('Manager', 'The store manager is responsible for leading all team members in the efficient and profitable operation of a ShareTea store.', 20.00),
+    ('Kitchen Lead 1', 'The kitchen lead acts as the overseer of food preparation and cooking. They ensure that all staff are working efficiently. They maintain the cleanliness of workstations and monitor all supplies used.', 18.00),
+    ('Kitchen Lead 2', 'The kitchen lead acts as the overseer of food preparation and cooking. They ensure that all staff are working efficiently. They maintain the cleanliness of workstations and monitor all supplies used.', 18.00),
+    ('Kitchen Lead 3', 'The kitchen lead acts as the overseer of food preparation and cooking. They ensure that all staff are working efficiently. They maintain the cleanliness of workstations and monitor all supplies used.', 18.00),
+    ('Barista 1', 'Preparing and serving hot and cold drinks such as coffee, tea, artisan and speciality beverages. Cleaning and sanitising work areas, utensils and equipment. Cleaning service and seating areas.', 15.00),
+    ('Barista 2', 'Preparing and serving hot and cold drinks such as coffee, tea, artisan and speciality beverages. Cleaning and sanitising work areas, utensils and equipment. Cleaning service and seating areas.', 15.00),
+    ('Barista 3', 'Preparing and serving hot and cold drinks such as coffee, tea, artisan and speciality beverages. Cleaning and sanitising work areas, utensils and equipment. Cleaning service and seating areas.', 15.00),
+    ('Barista 4', 'Preparing and serving hot and cold drinks such as coffee, tea, artisan and speciality beverages. Cleaning and sanitising work areas, utensils and equipment. Cleaning service and seating areas.', 15.00),
+    ('Barista 5', 'Preparing and serving hot and cold drinks such as coffee, tea, artisan and speciality beverages. Cleaning and sanitising work areas, utensils and equipment. Cleaning service and seating areas.', 15.00),
+    ('Barista 6', 'Preparing and serving hot and cold drinks such as coffee, tea, artisan and speciality beverages. Cleaning and sanitising work areas, utensils and equipment. Cleaning service and seating areas.', 15.00)
+
+
+-- Populate Customer (this takes about 8mins)
+-- Gets the first 2000 people from Peeps database // should swap to a insertIntoCustomer Proc, but need getGenderID
+DECLARE @PersonID INT = 2000, @CustFname varchar(25), @CustLname varchar(25), @CustDOB DATE,
+    @GenderID INT, @GenderCount INT = (SELECT COUNT(*) FROM GENDER)
+WHILE @PersonID > 0
+BEGIN
+    SET @CustFname = (SELECT CustomerFname FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @PersonID)
+    SET @CustLname = (SELECT CustomerLname FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @PersonID)
+    SET @CustDOB = (SELECT DateOfBirth FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @PersonID)
+    SET @GenderID = (SELECT @GenderCount * RAND() + 1)
+    INSERT INTO CUSTOMER (GenderID, CustomerFname, CustomerLname, CustomerDOB) VALUES
+        (@GenderID, @CustFname, @CustFname, @CustDOB)
+    SET @PersonID = @PersonID - 1
+END
+GO
+
+CREATE PROCEDURE WRAPPER_insertIntoEmployee
+AS
+DECLARE @EmpType_PK INT
+DECLARE @Gender_PK INT
+DECLARE @Store_COUNT INT = (SELECT COUNT(*) FROM STORE)
+DECLARE @EmpType_COUNT INT = (SELECT COUNT(*) FROM EMPLOYEE_TYPE)
+DECLARE @TOTAL_EMPS INT = @Store_COUNT * @EmpType_COUNT
+DECLARE @Gender_COUNT INT = (SELECT COUNT(*) FROM GENDER)
+DECLARE @FName varchar(50), @LName varchar(50), @DOB Date, @ETName varchar(50), @GName varchar(50)
+
+WHILE @TOTAL_EMPS > 0
+    BEGIN
+        SET @EmpType_PK = (SELECT (@TOTAL_EMPS % @EmpType_COUNT) + 1);
+        SET @Gender_PK = (SELECT FLOOR(RAND()*(@Gender_COUNT-1+1))+1);
+        SET @DOB = DATEADD(DAY, (1 - (CONVERT(int, CRYPT_GEN_RANDOM(2)) % ((25 - 17) * 365))), CONVERT(date, DATEADD(YEAR, 1 - 17, GETDATE())));
+        SET @FName = (SELECT CustomerFname FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @TOTAL_EMPS);
+        SET @LName = (SELECT CustomerLname FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @TOTAL_EMPS);
+        SET @ETName = (SELECT EmployeeTypeName FROM EMPLOYEE_TYPE WHERE EmployeeTypeID = @EmpType_PK);
+        SET @GName = (SELECT GenderName FROM GENDER WHERE GenderID = @Gender_PK);
+
+        EXEC insertIntoEmployee
+        @FName = @FName,
+        @LName  = @LName,
+        @DOB  = @DOB,
+        @EmployeeTypeName = @ETName,
+        @GenderName = @GName
+
+        SET @TOTAL_EMPS = @TOTAL_EMPS - 1;
+    END
+
+EXEC WRAPPER_insertIntoEmployee
+
+select EmployeeTypeID, COUNT(EmployeeTypeID) from EMPLOYEE GROUP BY EmployeeTypeID ORDER BY EmployeeTypeID
+
+select * from EMPLOYEE

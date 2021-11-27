@@ -1,3 +1,5 @@
+USE INFO_430_Proj_04;
+
 -- Get the top 1 to 20 percentile of customers for customers, 
 -- above the age of 18, based on the total number of orders they have made. (DANIEL)
 WITH 
@@ -8,7 +10,7 @@ AS (SELECT C.CustomerID, C.CustomerFname, C.CustomerLname,
 FROM CUSTOMER C
     JOIN [ORDER] O on C.CustomerID = O.CustomerID
     WHERE C.CustomerDOB > DATEADD(YEAR, -18, GETDATE())
-GROUP BY S.StudentID, S.StudentFname, S.StudentLname)
+GROUP BY C.CustomerID, C.CustomerFname, C.CustomerLname)
 SELECT * FROM RankedCustomerOrders WHERE OrderPercentile BETWEEN 1 AND 20 ORDER BY OrderPercentile
 
 -- Sort ordered drinks into cases based on number of toppings ordered and size
@@ -19,7 +21,7 @@ SELECT * FROM RankedCustomerOrders WHERE OrderPercentile BETWEEN 1 AND 20 ORDER 
 SELECT (CASE
     WHEN ToppingCount > 2 AND SizeName = 'Large'
         THEN 'Extravagant'
-    WHEN ToppingCount BETWEEN 1 AND 2 AND (Size = 'Large' or Size = 'Medium')
+    WHEN ToppingCount BETWEEN 1 AND 2 AND (SizeName = 'Large' or SizeName = 'Medium')
         THEN 'Average'
     WHEN ToppingCount < 1 AND (SizeName = 'Medium' or SizeName = 'Small')
         THEN 'Frugal'
@@ -65,3 +67,47 @@ FROM CTE_EmployeeTotalPayAndHours ET
     JOIN SHIFT S ON S.ShiftID = SE.ShiftID
     JOIN STORE ST ON ST.StoreID = S.StoreID
 GROUP BY S.StoreID, ST.StoreName 
+
+-- For each employee in the barista employee type, what is the total amount of orders divided by the total hours worked, what is their average orders per hour. 
+
+SELECT E.EmployeeID, E.EmployeeFName, E.EmployeeLName, ET.EmployeeTypeName, (COUNT(O.OrderID) / SUM(DATEDIFF(HOUR, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime))) AS [Avg. Order Per Hour],
+    RANK() OVER(PARTITION BY E.EmployeeID ORDER BY (COUNT(O.OrderID) / SUM(DATEDIFF(HOUR, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime))) DESC) EmpAvgOrderPHour_Rank
+FROM EMPLOYEE E 
+JOIN EMPLOYEE_TYPE ET ON ET.EmployeeTypeID = E.EmployeeTypeID
+JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
+JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+JOIN SHIFT_TYPE ST ON ST.ShiftTypeID = S.ShiftTypeID
+JOIN [ORDER] O ON O.EmployeeID = E.EmployeeID
+WHERE ET.EmployeeTypeName = 'Barista'
+GROUP BY E.EmployeeID, E.EmployeeFName, E.EmployeeLName, ET.EmployeeTypeName
+ORDER BY EmpAvgOrderPHour_Rank ASC
+GO
+
+-- For each store, what drinks are the most popular?
+
+SELECT DO.DrinkID, D.DrinkName, S.StoreName, COUNT(DO.OrderID) AS NumOrders,
+DENSE_RANK() OVER (PARTITION BY S.StoreName ORDER BY COUNT(DO.OrderID) DESC) AS DenseRankDrinkPopularity
+FROM STORE S
+    JOIN SHIFT SH ON S.StoreID = SH.StoreID
+    JOIN SHIFT_EMPLOYEE SE ON SH.ShiftID = SE.ShiftID
+    JOIN EMPLOYEE E ON SE.EmployeeID = E.EmployeeID
+    JOIN [ORDER] O ON E.EmployeeID = O.EmployeeID
+    JOIN DRINK_ORDER DO ON O.OrderID = DO.OrderID
+    JOIN DRINK D ON DO.DrinkID = D.DrinkID
+GROUP BY DO.DrinkID, D.DrinkName, S.StoreName
+GO
+
+-- For each store, what toppings are the most popular?
+
+SELECT DTO.ToppingID, T.ToppingName, S.StoreName, COUNT(DTO.DrinkOrderID) AS NumDrinkOrders,
+DENSE_RANK() OVER (PARTITION BY S.StoreName ORDER BY COUNT(DTO.DrinkOrderID) DESC) AS DenseRankToppingPopularity
+FROM STORE S
+    JOIN SHIFT SH ON S.StoreID = SH.StoreID
+    JOIN SHIFT_EMPLOYEE SE ON SH.ShiftID = SE.ShiftID
+    JOIN EMPLOYEE E ON SE.EmployeeID = E.EmployeeID
+    JOIN [ORDER] O ON E.EmployeeID = O.EmployeeID
+    JOIN DRINK_ORDER DO ON O.OrderID = DO.OrderID
+    JOIN DRINK_TOPPING_ORDER DTO ON DO.DrinkOrderID = DTO.DrinkOrderID
+    JOIN TOPPING T ON DTO.ToppingID = T.ToppingID
+GROUP BY DTO.ToppingID, T.ToppingName, S.StoreName
+GO
