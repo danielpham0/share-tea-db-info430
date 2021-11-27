@@ -112,3 +112,31 @@ FROM STORE S
     JOIN TOPPING T ON DTO.ToppingID = T.ToppingID
 GROUP BY DTO.ToppingID, T.ToppingName, S.StoreName
 GO
+
+-- In each season, what times of the day are the busiest in terms of the number of customer orders for each store?  (for increased staffing? ) (JONATHAN)
+
+SELECT StoreName, (CASE
+    WHEN MONTH(OrderDate) <= 2 OR MONTH(OrderDate) = 12
+        THEN 'Winter'
+    WHEN MONTH(OrderDate) <= 5 AND MONTH(OrderDate) >= 3
+        THEN 'Spring'
+    WHEN MONTH(OrderDate) <= 8 AND MONTH(OrderDate) >= 6
+        THEN 'Summer'
+    ELSE 'Fall'
+        END) AS Season, HOUR(OrderDate) AS TimeOfDay, COUNT(*) AS NumberOfOrders
+FROM [ORDER] O
+JOIN EMPLOYEE E ON E.EmployeeID = O.EmployeeID
+JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
+JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+JOIN STORE ST ON ST.StoreID = S.StoreID
+GROUP BY StoreName, (CASE
+    WHEN MONTH(OrderDate) <= 2 OR MONTH(OrderDate) = 12
+        THEN 'Winter'
+    WHEN MONTH(OrderDate) <= 5 AND MONTH(OrderDate) >= 3
+        THEN 'Spring'
+    WHEN MONTH(OrderDate) <= 8 AND MONTH(OrderDate) >= 6
+        THEN 'Summer'
+    ELSE 'Fall'
+        END), TimeOfDay
+ORDER BY NumberOfOrders DESC
+GO
