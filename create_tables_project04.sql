@@ -177,7 +177,7 @@ CREATE TABLE [dbo].[ORDER](
    [OrderID] [int] NOT NULL IDENTITY(1,1) PRIMARY KEY,
    [CustomerID] int NOT NULL FOREIGN KEY REFERENCES CUSTOMER(CustomerID),
    [EmployeeID] int NOT NULL FOREIGN KEY REFERENCES EMPLOYEE(EmployeeID),
-   [OrderDate] [Date] NOT NULL
+   [OrderDateTime] [DateTime] NOT NULL
 ) ON [PRIMARY]
 GO
 
