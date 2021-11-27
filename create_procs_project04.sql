@@ -236,133 +236,6 @@ CREATE PROCEDURE insertIntoDrink
         COMMIT TRAN T1
 GO
 
--- do we need a cart? -- we want to process all at the same time
--- for all toppings in drink_topping_order, we need the drink_order id
--- for all drinks in drink_order we need an order id
--- to handle that all at the same time, we need a cart for each drink before the drink is committed to drink_order
--- and we need a cart for each person's drink_order before it's fully committed to order
--- NOTE: the following will be inserts that assume we have an id - this will make our job easier if we do implement cart
-
--- insertIntoOrder (needs getEmployeeID and to deal with OrderTotal through computed column)
--- CREATE PROCEDURE insertIntoOrder
---     @CustFname varchar(25),
---     @CustLname varchar(25),
---     @CustDOB date,
---     @EmpFname varchar(25),
---     @EmpLname varchar(25),
---     @EmpDOB date,
---     @OrdDate DATE
---     AS
---     IF @CustFname IS NULL OR @CustLname IS NULL OR @CustDOB IS NULL OR @EmpFname IS NULL OR @EmpLname IS NULL OR
---         @EmpDOB IS NULL OR @OrdDate IS NULL
---     BEGIN 
---         PRINT 'Parameters for insert order cannot be null.';
---         THROW 99999, 'Parameters for insertion were null', 1;
---     END
---     DECLARE @CustID INT, @EmpID INT
---     EXEC getCustomerID
---         @CFname = @CustFname,
---         @CLname = @CustLname,
---         @CDOB = @CustDOB,
---         @CID = @CustID OUTPUT
---     IF (@CustID IS NULL)
---     BEGIN 
---         PRINT '@CustID cannot be NULL!';
---         THROW 99999, '@CustID did not return a proper value', 1;
---     END
---     EXEC getEmployeeID
---         @EFname = @EmpFname,
---         @ELname = @EmpLname,
---         @EDOB = @EmpDOB,
---         @EID = @EmpID OUTPUT
---     IF (@EmpID IS NULL)
---     BEGIN 
---         PRINT '@EmpID cannot be NULL!';
---         THROW 99999, '@EmpID did not return a proper value', 1;
---     END
---     BEGIN TRAN T1
---     INSERT INTO [ORDER] (CustomerID, EmployeeID, OrderDate)
---         VALUES (@CustID, @EmpID, @OrdDate)
---     IF @@ERROR <> 0
---         BEGIN
---             PRINT 'Terminating...'
---             ROLLBACK TRAN T1
---         END
---     ELSE
---         COMMIT TRAN T1
--- GO
--- Synthetic transaction procedure for insertIntoOrderWrapper (needs insertIntoOrder to work)
--- CREATE PROCEDURE insertIntoOrderWrapper
--- @RUN INT
--- AS
--- DECLARE @CustID INT, @CustFname varchar(25), @CustLname varchar(25), 
---     @EmpID INT, @EmpFname varchar(25), @EmpLname varchar(25), @OrdDate DATE, 
---     @CustomerCount INT = (SELECT COUNT(*) FROM CUSTOMER), 
---     @EmployeeCount INT = (SELECT COUNT(*) FROM EMPLOYEE)
--- WHILE @Run > 0
--- BEGIN
---     SET @CustID = (SELECT RAND() * @CustomerCount + 1)
---     SET @CustFname = (SELECT CustomerFname FROM CUSTOMER WHERE CustomerID = @CustID)
---     SET @CustLname = (SELECT CustomerLname FROM CUSTOMER WHERE CustomerID = @CustID)
---     SET @CustDOB = (SELECT CustomerDOB FROM CUSTOMER WHERE CustomerID = @CustID)
---     SET @EmpID = (SELECT RAND() * @EmployeeCount + 1)
---     SET @EmpFname = (SELECT EmployeeFname FROM EMPLOYEE WHERE EmployeeID = @EmpID)
---     SET @EmpLname = (SELECT EmployeeLname FROM EMPLOYEE WHERE EmployeeID = @EmpID)
---     SET @EmpDOB = (SELECT CustomerDOB FROM CUSTOMER WHERE CustomerID = @CustID)
---     -- Gets a date within the past 5 years
---     SET @OrdDate = (SELECT DATEADD(Day, -(RAND() * 1825), GETDATE()))
---     EXEC insertIntoOrder
---         @CustFname = @CustFname,
---         @CustLname = @CustLname,
---         @CustDOB = @CustDOB,
---         @EmpFname = @EmpFname,
---         @EmpLname = @EmpLname,
---         @EmpDOB = @EmpDOB,
---         @OrdDate = @OrdDate
---     SET @RUN = @RUN - 1
--- END
--- GO
--- insertIntoDrinkOrder (needs getSizeID)
--- CREATE PROCEDURE insertIntoDrinkOrder
---     @DrinkName varchar(50),
---     @OrderID INT,
---     @Size varchar(25),
---     @Quantity INT
---     AS
---     IF @DrinkName IS NULL OR @OrderID IS NULL OR @Size IS NULL OR @Quantity IS NULL
---     BEGIN 
---         PRINT 'Parameters for insert order cannot be null.';
---         THROW 99999, 'Parameters for insertion were null', 1;
---     END
---     DECLARE @DrinkID INT, @SizeID INT
---     EXEC getDrinkID
---         @DName = @DrinkName,
---         @DID = @DrinkID OUTPUT
---     IF (@DrinkID IS NULL)
---     BEGIN 
---         PRINT '@DrinkID cannot be NULL!';
---         THROW 99999, '@DrinkID did not return a proper value', 1;
---     END
---     EXEC getSizeID
---         @SName = @Size,
---         @SID = @SizeID OUTPUT
---     IF (@SizeID IS NULL)
---     BEGIN 
---         PRINT '@SizeID cannot be NULL!';
---         THROW 99999, '@SizeID did not return a proper value', 1;
---     END
---     BEGIN TRAN T1
---     INSERT INTO [DRINK_ORDER] (DrinkID, OrderID, SizeID, Quantity)
---         VALUES (@DrinkID, @OrderID, @SizeID, @Quantity)
---     IF @@ERROR <> 0
---         BEGIN
---             PRINT 'Terminating...'
---             ROLLBACK TRAN T1
---         END
---     ELSE
---         COMMIT TRAN T1
--- GO
-
 -- getMeasurementID
 CREATE PROCEDURE getMeasurementID
     @MName varchar(50),
@@ -490,21 +363,9 @@ GO
 -- getToppingID 
 CREATE PROCEDURE getToppingID
     @ToppingName varchar(100),
-    @ToppingTypeName varchar(100), 
     @TID int OUTPUT
 AS
-DECLARE @TTID int 
-
-EXEC getToppingTypeID
-@ToppingTypeName = @ToppingTypeName,
-@TID = @TTID OUTPUT 
-IF @TTID IS NULL 
-    BEGIN
-        PRINT 'topping type does not exist';
-        THROW 55555, 'topping type id is null', 11;
-    END 
-
-SET @TID = (SELECT ToppingID FROM TOPPING WHERE ToppingName = @ToppingName AND ToppingTypeID = @TTID)
+SET @TID = (SELECT ToppingID FROM TOPPING WHERE ToppingName = @ToppingName)
 GO
 
 -- INSERT TOPPING (Lauren)
@@ -534,4 +395,233 @@ IF @@ERROR <> 0
     ELSE 
         COMMIT TRAN T1 
 
--- Insert Shift (Lauren)
+GO
+-- CART PROCEDURES
+-- insertIntoDrinkCart
+CREATE PROCEDURE insertIntoDrinkCart
+    @CustomerFname varchar(25),
+    @CustomerLname varchar(25),
+    @CustomerDOB DATE,
+    @DrinkName varchar(25),
+    @Size varchar(25),
+    @Quantity INT
+    AS
+    DECLARE @CustomerID INT, @DrinkID INT, @SizeID INT
+    -- CHECK PARAMETERS
+    IF @CustomerFname IS NULL OR @CustomerLname IS NULL OR @CustomerDOB IS NULL 
+        OR @DrinkName IS NULL OR @Size IS NULL OR @Quantity IS NULL
+    BEGIN 
+        PRINT 'Parameters for insert drink cannot be null.';
+        THROW 99999, 'Parameters for insertion were null', 1;
+    END
+    -- FIND CUSTOMER ID
+    EXEC getCustomerID
+        @CFname = @CustomerFname,
+        @CLname = @CustomerLname,
+        @CDOB = @CustomerDOB,
+        @CID = @CustomerID OUTPUT
+    IF (@CustomerID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a CustomerID from parameters!';
+        THROW 99999, '@CustomerID returned null value.', 1;
+    END
+    -- FIND DRINK ID
+    EXEC getDrinkID
+        @DName = @DrinkName,
+        @DID = @DrinkID OUTPUT
+    IF (@DrinkID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a DrinkID from parameters!';
+        THROW 99999, '@DrinkID returned null value.', 1;
+    END
+    -- FIND SIZE ID
+    EXEC getSizeID
+        @SName = @Size,
+        @SID = @SizeID OUTPUT
+    IF (@SizeID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a SizeID from parameters!';
+        THROW 99999, '@SizeID returned null value.', 1;
+    END
+    -- INSERT INTO DRINK_CART
+    BEGIN TRAN T1
+    INSERT INTO DRINK_CART (CustomerID, DrinkID, SizeID, Quantity)
+        VALUES (@CustomerID, @DrinkID, @SizeID, @Quantity)
+    IF @@ERROR <> 0
+        BEGIN
+            PRINT 'Terminating...'
+            ROLLBACK TRAN T1
+        END
+    ELSE
+        COMMIT TRAN T1
+GO
+-- insertIntoToppingCart
+CREATE PROCEDURE insertIntoToppingCart
+    @DrinkCartID INT,
+    @ToppingName varchar(25),
+    @Measurement varchar(25),
+    @Quantity DECIMAL(7,2)
+    AS
+    DECLARE @ToppingID INT, @MeasurementID INT
+    -- CHECK PARAMETERS
+    IF @DrinkCartID IS NULL OR @ToppingName IS NULL OR @Measurement IS NULL 
+        OR @Quantity IS NULL
+    BEGIN 
+        PRINT 'Parameters for insert drink cannot be null.';
+        THROW 99999, 'Parameters for insertion were null', 1;
+    END
+    -- GET TOPPING ID
+    EXEC getToppingID
+        @ToppingName = @ToppingName,
+        @TID = @ToppingID OUTPUT
+    IF (@ToppingID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a ToppingID from parameters!';
+        THROW 99999, '@ToppingID returned null value.', 1;
+    END
+    -- GET MEASUREMENT ID
+    EXEC getMeasurementID
+        @MName = @Measurement,
+        @MID = @MeasurementID OUTPUT
+    IF (@MeasurementID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a MeasurementID from parameters!';
+        THROW 99999, '@MeasurementID returned null value.', 1;
+    END
+    -- INSERT INTO TOPPING CART
+    BEGIN TRAN T1
+    INSERT INTO TOPPING_CART (DrinkCartID, ToppingID, MeasurementID, Quantity)
+        VALUES (@DrinkCartID, @ToppingID, @MeasurementID, @Quantity)
+    IF @@ERROR <> 0
+        BEGIN
+            PRINT 'Terminating...'
+            ROLLBACK TRAN T1
+        END
+    ELSE
+        COMMIT TRAN T1
+GO
+
+-- processDrinkCart
+CREATE PROCEDURE processDrinkCart
+    @CustomerFname varchar(25),
+    @CustomerLname varchar(25),
+    @CustomerDOB DATE,
+    @EmployeeFname varchar(25),
+    @EmployeeLname varchar(25),
+    @EmployeeDOB DATE,
+    @OrderDate DATE
+    AS
+    DECLARE @CustomerID INT, @EmployeeID INT, @OrderID INT, @DrinkCartID INT, @DrinkOrderID INT,
+        @DrinkID INT, @SizeID INT, @DrinkQuantity INT, @ToppingQuantity DECIMAL(7,2), @ToppingCartID INT,
+        @ToppingID INT, @MeasurementID INT
+    -- CHECK PARAMETERS
+    IF @CustomerFname IS NULL OR @CustomerLname IS NULL OR @CustomerDOB IS NULL
+    BEGIN 
+        PRINT 'Parameters for insert drink cannot be null.';
+        THROW 99999, 'Parameters for insertion were null', 1;
+    END
+    -- GET CUSTOMER ID
+    EXEC getCustomerID
+        @CFname = @CustomerFname,
+        @CLname = @CustomerLname,
+        @CDOB = @CustomerDOB,
+        @CID = @CustomerID OUTPUT
+    IF (@CustomerID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a CustomerID from parameters!';
+        THROW 99999, '@CustomerID returned null value.', 1;
+    END
+    -- DON'T CREATE NEW ORDER IF THERE IS NOTHING FOR THEM IN DRINK_CART
+    IF NOT EXISTS (SELECT * FROM DRINK_CART WHERE CustomerID = @CustomerID)
+    BEGIN
+        RETURN
+    END
+    -- GET EMPLOYEE ID
+    EXEC getEmployeeID
+        @EFname = @EmployeeFname,
+        @ELname = @EmployeeLname,
+        @EDOB = @EmployeeDOB,
+        @EID = @EmployeeID OUTPUT
+    IF (@EmployeeID IS NULL)
+    BEGIN 
+        PRINT 'Could not find a EmployeeID from parameters!';
+        THROW 99999, '@EmployeeID returned null value.', 1;
+    END
+    -- BEGIN THE PROCESSING
+    BEGIN TRANSACTION T1
+        -- CREATE A NEW ORDER AND RECORD THE ORDER ID
+        BEGIN TRANSACTION T2
+        INSERT INTO [ORDER] (CustomerID, EmployeeID, OrderDate) VALUES (@CustomerID, @EmployeeID, @OrderDate)
+        SET @OrderID = (SELECT SCOPE_IDENTITY())
+        IF (@OrderID IS NULL)
+        BEGIN 
+            PRINT 'Could not find a OrderID from parameters!';
+            THROW 99999, '@OrderID returned null value.', 1;
+        END
+        COMMIT TRANSACTION T2
+        -- CREATE A TABLE VARIABLE FOR THE CUSTOMER'S DRINKS
+        BEGIN TRANSACTION T3
+        DECLARE @CustomerDrinks TABLE(PKID INT IDENTITY(1,1) primary key, DrinkCartID int not null, CustomerID int not null, 
+            DrinkID int not null, SizeID int not null, Quantity int not null)
+        INSERT INTO @CustomerDrinks SELECT DrinkCartID, CustomerID, DrinkID, SizeID, Quantity 
+            FROM DRINK_CART WHERE CustomerID = @CustomerID
+        COMMIT TRANSACTION T3
+        -- LOOP THROUGH EACH ONE OF THE CUSTOMER'S DRINKS
+        BEGIN TRAN T4
+        WHILE (SELECT COUNT(*) FROM @CustomerDrinks) > 0
+            BEGIN
+                SET @DrinkCartID = (SELECT TOP 1 DrinkCartID FROM @CustomerDrinks)
+                SET @DrinkID = (SELECT DrinkID FROM @CustomerDrinks WHERE DrinkCartID = @DrinkCartID)
+                SET @SizeID = (SELECT SizeID FROM @CustomerDrinks WHERE DrinkCartID = @DrinkCartID)
+                SET @DrinkQuantity = (SELECT Quantity FROM @CustomerDrinks WHERE DrinkCartID = @DrinkCartID)
+                -- INSERT INTO DRINK ORDER TABLE FOR THE CURRENT DRINK
+                BEGIN TRAN T4_INNER
+                INSERT INTO DRINK_ORDER(DrinkID, OrderID, SizeID, Quantity) VALUES (@DrinkID, @OrderID, @SizeID, @DrinkQuantity)
+                SET @DrinkOrderID = (SELECT SCOPE_IDENTITY())
+                IF (@DrinkOrderID IS NULL)
+                BEGIN 
+                    PRINT 'Could not find a DrinkOrderID from parameters!';
+                    THROW 99999, '@DrinkOrderID returned null value.', 1;
+                END
+                COMMIT TRAN T4_INNER
+                -- CREATE TABLE VARIABLE FOR EACH TOPPING FOR THE CURRENT DRINK
+                BEGIN TRAN T4_INNER_2
+                DECLARE @DrinkToppings TABLE(PKID INT IDENTITY(1,1) primary key, ToppingCartID int not null, DrinkCartID int not null, 
+                    ToppingID int not null, MeasurementID int not null, Quantity DECIMAL(7,2) not null)
+                INSERT INTO @DrinkToppings SELECT ToppingCartID, DrinkCartID, ToppingID, MeasurementID, Quantity 
+                    FROM TOPPING_CART WHERE DrinkCartID = @DrinkCartID
+                COMMIT TRAN T4_INNER_2
+                -- LOOP THROUGH EACH TOPPING
+                BEGIN TRAN T4_INNER_3
+                WHILE (SELECT COUNT(*) FROM @DrinkToppings) > 0
+                    BEGIN
+                        SET @ToppingCartID = (SELECT TOP 1 ToppingCartID FROM @DrinkToppings)
+                        SET @ToppingID = (SELECT ToppingID FROM @DrinkToppings WHERE ToppingCartID = @ToppingCartID)
+                        SET @MeasurementID = (SELECT MeasurementID FROM @DrinkToppings WHERE ToppingCartID = @ToppingCartID)
+                        SET @ToppingQuantity = (SELECT Quantity FROM @DrinkToppings WHERE ToppingCartID = @ToppingCartID)
+                        -- INSERT THE TOPPING INTO DRINK TOPPING ORDER TABLE
+                        BEGIN TRAN T4_INNER_3_INNER
+                        INSERT INTO DRINK_TOPPING_ORDER(DrinkOrderID, ToppingID, MeasurementID, Quantity) 
+                            VALUES (@DrinkOrderID, @ToppingID, @MeasurementID, @ToppingQuantity)
+                        DELETE FROM @DrinkToppings WHERE ToppingCartID = @ToppingCartID
+                        COMMIT TRAN T4_INNER_3_INNER
+                    END
+                COMMIT TRAN T4_INNER_3
+                -- CLEAN UP THIS CURRENT DRINK AND TOPPINGS FOR THIS CURRENT DRINK
+                BEGIN TRAN T4_INNER_3
+                DELETE FROM TOPPING_CART WHERE DrinkCartID = @DrinkCartID
+                DELETE FROM @CustomerDrinks WHERE DrinkCartID = @DrinkCartID
+                COMMIT TRAN T4_INNER_3
+            END
+        COMMIT TRAN T4
+        -- CLEAN UP DRINK_CART FOR THIS CUSTOMER
+        BEGIN TRAN T5
+        DELETE FROM DRINK_CART WHERE CustomerID = @CustomerID
+        COMMIT TRAN T5
+    IF @@ERROR <>0 OR @@TRANCOUNT <> 1
+        BEGIN 
+            ROLLBACK TRAN T1
+        END
+    ELSE
+        COMMIT TRAN T1
+GO 
