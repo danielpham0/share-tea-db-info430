@@ -247,3 +247,34 @@ EXEC WRAPPER_insertIntoEmployee
 select EmployeeTypeID, COUNT(EmployeeTypeID) from EMPLOYEE GROUP BY EmployeeTypeID ORDER BY EmployeeTypeID
 
 select * from EMPLOYEE
+GO 
+
+-- BULK INSERT INTO SHIFT DATA 
+ALTER PROCEDURE bulkInsertShiftData
+@Run int 
+AS 
+DECLARE @StoreCount INT = (SELECT COUNT(*) FROM STORE)
+DECLARE @ShiftTypeCount INT = (SELECT COUNT(*) FROM SHIFT_TYPE)
+
+DECLARE @Store varchar(50)
+DECLARE @ShiftType varchar(50)
+DECLARE @randomDate Datetime
+
+WHILE @Run > 0
+    BEGIN
+        SET @Store =  (SELECT StoreName FROM STORE WHERE StoreID = ROUND(RAND() * @StoreCount +1, 0))
+        SET @ShiftType = (SELECT ShiftTypeName FROM SHIFT_TYPE WHERE ShiftTypeID = ROUND(RAND() * @ShiftTypeCount +1, 0))
+        SET @randomDate = CONVERT(DATE, DATEADD(day, (ABS(CHECKSUM(NEWID())) % 3650 * -1), GETDATE()))
+
+        EXEC insertShift
+        @ShiftTypeName = @ShiftType,
+        @StoreName = @Store,
+        @Day = @randomDate
+
+        SET @Run = @Run - 1
+    END
+GO 
+
+-- Running with 3000 rows of inserts
+EXEC dbo.bulkInsertShiftData 
+@Run = 3000

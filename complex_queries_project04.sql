@@ -111,3 +111,19 @@ FROM STORE S
     JOIN TOPPING T ON DTO.ToppingID = T.ToppingID
 GROUP BY DTO.ToppingID, T.ToppingName, S.StoreName
 GO
+
+-- What are the top 3 drink and boba combinations for each month across all shareTea locations 
+SELECT MONTH(O.OrderDate) AS [Month],  D.DrinkName, T.ToppingName, COUNT(DTO.DrinkToppingOrderID) AS countDrinks,
+RANK() OVER (ORDER BY COUNT(DTO.DrinkToppingOrderID) DESC) AS DenseRankDrinkPopularity
+INTO #TempDrinkPopularityMonth
+FROM DRINK_TOPPING_ORDER DTO 
+    JOIN DRINK_ORDER DO ON DO.DrinkOrderID = DTO.DrinkOrderID
+    JOIN [ORDER] O ON  O.OrderID = DO.OrderID 
+    JOIN TOPPING T ON T.ToppingID = DTO.ToppingID 
+    JOIN DRINK D ON D.DrinkID = DO.DrinkID 
+GROUP BY DTO.DrinkToppingOrderID, D.DrinkName, T.ToppingName, (O.OrderDate)
+
+SELECT * 
+FROM #TempDrinkPopularityMonth
+WHERE DenseRankDrinkPopularity < 4
+ORDER BY [Month]

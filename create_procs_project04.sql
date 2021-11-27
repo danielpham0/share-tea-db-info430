@@ -507,8 +507,8 @@ IF @TTID IS NULL
 SET @TID = (SELECT ToppingID FROM TOPPING WHERE ToppingName = @ToppingName AND ToppingTypeID = @TTID)
 GO
 
--- INSERT TOPPING (Lauren)
-CREATE PROCEDURE insertToppingID
+-- INSERT TOPPING 
+CREATE PROCEDURE insertTopping
     @ToppingName varchar(100),
     @ToppingTypeName varchar(100),
     @ToppingTypeDescription varchar(300)
@@ -524,14 +524,48 @@ BEGIN TRAN T1
 
     INSERT INTO TOPPING(ToppingTypeID, ToppingName)
     VALUES (@TTID, @ToppingName)
+    IF @@ERROR <> 0 
+            BEGIN 
+                PRINT 'failed to insert';
+                -- THROW 55555, 'failed to insert values', 11; 
+                ROLLBACK TRAN T1
+            END 
+        ELSE 
+            COMMIT TRAN T1 
+GO 
 
-IF @@ERROR <> 0 
+-- Insert Shift 
+CREATE PROCEDURE insertShift
+@ShiftTypeName varchar(50),
+@StoreName varchar(50),
+@Day date 
+AS 
+DECLARE @ShiftTypeID int, @StoreID int 
+
+EXEC getShiftTypeID
+    @STypeName = @ShiftTypeName,
+    @STID = @ShiftTypeID OUTPUT
+IF (@ShiftTypeID IS NULL)
+BEGIN 
+    PRINT 'Could not find a ShiftType ID from parameters!';
+    THROW 99999, '@ShiftTypeID returned null value.', 1;
+END
+
+EXEC getStoreID
+    @SName = @StoreName,
+    @SID = @StoreID OUTPUT
+IF (@StoreID IS NULL)
+BEGIN 
+    PRINT 'Could not find a Store ID from parameters!';
+    THROW 99999, '@StoreID returned null value.', 1;
+END
+
+BEGIN TRAN T1
+    INSERT INTO SHIFT(ShiftTypeID, StoreID, [DateTime])
+    VALUES (@ShiftTypeID, @StoreID, @Day)
+    IF @@ERROR <> 0 
         BEGIN 
-            PRINT 'failed to insert';
-            -- THROW 55555, 'failed to insert values', 11; 
-            ROLLBACK TRAN T1
+            ROLLBACK TRAN T1 
         END 
     ELSE 
         COMMIT TRAN T1 
-
--- Insert Shift (Lauren)

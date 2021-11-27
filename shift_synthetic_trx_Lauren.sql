@@ -33,58 +33,75 @@ IF @StoreID IS NULL
         PRINT 'storeName does not exist';
         THROW 55555, 'store ID is null', 11;
     END 
+GO 
 
--- get Shift Type ID 
+-- INSERT SHIFT 
+CREATE PROCEDURE insertShift
+@ShiftTypeName varchar(50),
+@StoreName varchar(50),
+@Day date 
+AS 
+DECLARE @ShiftTypeID int, @StoreID int 
+
 EXEC getShiftTypeID
-@ShiftTypeName = @STName,
-@STID = @STypeID OUTPUT 
+    @STypeName = @ShiftTypeName,
+    @STID = @ShiftTypeID OUTPUT
+IF (@ShiftTypeID IS NULL)
+BEGIN 
+    PRINT 'Could not find a ShiftType ID from parameters!';
+    THROW 99999, '@ShiftTypeID returned null value.', 1;
+END
 
-IF @STypeID IS NULL 
-    BEGIN
-        PRINT 'Shift Type does not exist';
-        THROW 55555, 'shift type ID is null', 11;
-    END 
+EXEC getStoreID
+    @SName = @StoreName,
+    @SID = @StoreID OUTPUT
+IF (@StoreID IS NULL)
+BEGIN 
+    PRINT 'Could not find a Store ID from parameters!';
+    THROW 99999, '@StoreID returned null value.', 1;
+END
 
-BEGIN TRAN T1 
+BEGIN TRAN T1
     INSERT INTO SHIFT(ShiftTypeID, StoreID, [DateTime])
-    VALUES (@STypeID, @StoreID, @shiftDate)
-
+    VALUES (@ShiftTypeID, @StoreID, @Day)
     IF @@ERROR <> 0 
         BEGIN 
-            PRINT 'failed to insert into shift';
-            ROLLBACK TRAN T1
+            ROLLBACK TRAN T1 
         END 
     ELSE 
         COMMIT TRAN T1 
+
 GO 
 
 -- creating synthethic transaction to insert shift data 
-CREATE PROCEDURE bulkInsertShiftData
+ALTER PROCEDURE bulkInsertShiftData
 @Run int 
 AS 
 DECLARE @StoreCount INT = (SELECT COUNT(*) FROM STORE)
 DECLARE @ShiftTypeCount INT = (SELECT COUNT(*) FROM SHIFT_TYPE)
 
-DECLARE @StoreID int
-DECLARE @ShiftTypeID int
+DECLARE @Store varchar(50)
+DECLARE @ShiftType varchar(50)
 DECLARE @randomDate Datetime
 
 WHILE @Run > 0
     BEGIN
-        SET @StoreID = (SELECT RAND() * @StoreCount +1)
-        SET @ShiftTypeID = (SELECT RAND() * @ShiftTypeCount + 1)
+        SET @Store =  (SELECT StoreName FROM STORE WHERE StoreID = ROUND(RAND() * @StoreCount +1, 0))
+        SET @ShiftType = (SELECT ShiftTypeName FROM SHIFT_TYPE WHERE ShiftTypeID = ROUND(RAND() * @ShiftTypeCount +1, 0))
         SET @randomDate = CONVERT(DATE, DATEADD(day, (ABS(CHECKSUM(NEWID())) % 3650 * -1), GETDATE()))
 
-        INSERT INTO SHIFT (ShiftTypeID, StoreID, [DateTime])
-        VALUES (@ShiftTypeID, @StoreID, @randomDate)
+        EXEC insertShift
+        @ShiftTypeName = @ShiftType,
+        @StoreName = @Store,
+        @Day = @randomDate
 
         SET @Run = @Run - 1
     END
 GO 
 
--- Running with 10 rows of inserts
+-- Running with 3000 rows of inserts
 EXEC dbo.bulkInsertShiftData 
-@Run = 10
+@Run = 3000
 
 -- checking my work
 SELECT * FROM SHIFT
