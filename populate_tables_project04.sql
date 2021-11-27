@@ -197,8 +197,8 @@ INSERT INTO TOPPING (ToppingName, ToppingTypeID, ToppingCost) VALUES
     ('Pudding', 4, 1.25), ('Grass-Jelly', 5, .55);
 
 -- Populate Customer (this takes about 8mins)
--- Gets the first 300 people from Peeps database // should swap to a insertIntoCustomer Proc, but need getGenderID
-DECLARE @PersonID INT = 300, @CustFname varchar(25), @CustLname varchar(25), @CustDOB DATE,
+-- Gets the first 2000 people from Peeps database // should swap to a insertIntoCustomer Proc, but need getGenderID
+DECLARE @PersonID INT = 2000, @CustFname varchar(25), @CustLname varchar(25), @CustDOB DATE,
     @GenderID INT, @GenderCount INT = (SELECT COUNT(*) FROM GENDER)
 WHILE @PersonID > 0
 BEGIN
@@ -206,7 +206,6 @@ BEGIN
     SET @CustLname = (SELECT CustomerLname FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @PersonID)
     SET @CustDOB = (SELECT DateOfBirth FROM Peeps.dbo.tblCUSTOMER WHERE CustomerID = @PersonID)
     SET @GenderID = (SELECT @GenderCount * RAND() + 1)
-    -- SET @GName = (SELECT GenderName FROM GENDER WHERE GenderID = @Gender_PK);
     INSERT INTO CUSTOMER (GenderID, CustomerFname, CustomerLname, CustomerDOB) VALUES
         (@GenderID, @CustFname, @CustFname, @CustDOB)
     SET @PersonID = @PersonID - 1
@@ -219,9 +218,10 @@ DECLARE @EmpType_PK INT
 DECLARE @Gender_PK INT
 DECLARE @Store_COUNT INT = (SELECT COUNT(*) FROM STORE)
 DECLARE @EmpType_COUNT INT = (SELECT COUNT(*) FROM EMPLOYEE_TYPE)
-DECLARE @TOTAL_EMPS INT = (SELECT (@EmpType_COUNT * @Store_COUNT))
+DECLARE @TOTAL_EMPS INT = @Store_COUNT * @EmpType_COUNT
 DECLARE @Gender_COUNT INT = (SELECT COUNT(*) FROM GENDER)
 DECLARE @FName varchar(50), @LName varchar(50), @DOB Date, @ETName varchar(50), @GName varchar(50)
+
 WHILE @TOTAL_EMPS > 0
     BEGIN
         SET @EmpType_PK = (SELECT (@TOTAL_EMPS % @EmpType_COUNT) + 1);
@@ -241,96 +241,9 @@ WHILE @TOTAL_EMPS > 0
 
         SET @TOTAL_EMPS = @TOTAL_EMPS - 1;
     END
-GO
 
 EXEC WRAPPER_insertIntoEmployee
 
-GO
--- cartWrapper
---   - RUN: Number of runs and number of times we process a cart
---   - DRINK_RUN: Number of drinks added to a cart per run
---   - TOPPING_RUN: Number of toppings per drink that was added
-CREATE PROCEDURE cartWrapper
-@RUN INT,
-@DRINK_RUN INT,
-@TOPPING_RUN INT
-AS 
-DECLARE @CustomerFname varchar(25), @CustomerLname varchar(25), @CustomerDOB DATE, @CustomerID INT,
-    @EmployeeFname varchar(25), @EmployeeLname varchar(25), @EmployeeDOB DATE, @EmployeeID INT,
-    @OrderDate DATE, @ToppingName varchar(25), @ToppingID INT, @Measurement varchar(25), 
-    @MeasurementID INT, @ToppingQuantity DECIMAL(7,2), @DrinkName varchar(25), @DrinkID INT,
-    @Size varchar(25), @SizeID INT, @DrinkQuantity INT, @DrinkCartID INT,
-    @CustomerCount INT = (SELECT COUNT(*) FROM CUSTOMER),
-    @EmployeeCount INT = (SELECT COUNT(*) FROM EMPLOYEE),
-    @DrinkCount INT = (SELECT COUNT(*) FROM DRINK),
-    @ToppingCount INT = (SELECT COUNT(*) FROM TOPPING),
-    @SizeCount INT = (SELECT COUNT(*) FROM SIZE),
-    @MeasurementCount INT = (SELECT COUNT(*) FROM MEASUREMENT),
-    @T_RUN INT = @TOPPING_RUN,
-    @D_RUN INT = @DRINK_RUN
--- EACH LOOP ACTS AS A CUSTOMER TRANSACTION, WHERE THEY ADD DRINKS, TOPPINGS FOR THOSE DRINKS, AND THEN CHECK OUT
-WHILE @RUN > 0
-BEGIN
-    -- OUR CURRENT LOOP'S CUSTOMER
-    SET @CustomerID = (SELECT RAND() * @CustomerCount + 1)
-    SET @CustomerFname = (SELECT CustomerFname FROM CUSTOMER WHERE CustomerID = @CustomerID)
-    SET @CustomerLname = (SELECT CustomerLname FROM CUSTOMER WHERE CustomerID = @CustomerID)
-    SET @CustomerDOB = (SELECT CustomerDOB FROM CUSTOMER WHERE CustomerID = @CustomerID)
-    -- EACH DRINK LOOP ADDS A DRINK TO THEIR CART
-    WHILE @DRINK_RUN > 0
-    BEGIN
-        SET @DrinkID = (SELECT RAND() * @DrinkCount + 1)
-        SET @DrinkName = (SELECT DrinkName FROM DRINK WHERE DrinkID = @DrinkID)
-        SET @SizeID = (SELECT RAND() * @SizeCount + 1)
-        SET @Size = (SELECT SizeName FROM SIZE WHERE SizeID = @SizeID)
-        SET @DrinkQuantity = (SELECT RAND() * 5 + 1)
-        EXEC insertIntoDrinkCart
-            @CustomerFname = @CustomerFname,
-            @CustomerLname = @CustomerLname,
-            @CustomerDOB = @CustomerDOB,
-            @DrinkName = @DrinkName,
-            @Size = @Size,
-            @Quantity = @DrinkQuantity
-        SET @DrinkCartID = (SELECT MAX(DrinkCartID) FROM DRINK_CART WHERE CustomerID = @CustomerID)
-        -- EACH LOOP ADDS A RANDOM TOPPING FOR THE DRINK THAT WAS CREATED
-        WHILE @TOPPING_RUN > 0
-        BEGIN
-            -- SELECT * FROM TOPPING_CART
-            SET @ToppingID = (SELECT RAND() * @ToppingCount + 1)
-            SET @ToppingName = (SELECT ToppingName FROM TOPPING WHERE ToppingID = @ToppingID)
-            SET @MeasurementID = (SELECT RAND() * @MeasurementCount + 1)
-            SET @Measurement = (SELECT MeasurementName FROM MEASUREMENT WHERE MeasurementID = @MeasurementID)
-            SET @ToppingQuantity = (SELECT RAND() * 5)
-            EXEC insertIntoToppingCart
-                @DrinkCartID = @DrinkCartID,
-                @ToppingName = @ToppingName,
-                @Measurement = @Measurement,
-                @Quantity = @ToppingQuantity
-            SET @TOPPING_RUN = @TOPPING_RUN - 1
-        END
-        SET @TOPPING_RUN = @T_RUN
-        SET @DRINK_RUN = @DRINK_RUN - 1
-    END
-    SET @EmployeeID = (SELECT RAND() * @EmployeeCount + 1)
-    SET @EmployeeFname = (SELECT EmployeeFname FROM EMPLOYEE WHERE EmployeeID = @EmployeeID)
-    SET @EmployeeLname = (SELECT EmployeeLname FROM EMPLOYEE WHERE EmployeeID = @EmployeeID)
-    SET @EmployeeDOB = (SELECT EmployeeDOB FROM EMPLOYEE WHERE EmployeeID = @EmployeeID)
-    -- Gets a date within the past 5 years
-    SET @OrderDate = (SELECT DATEADD(Day, -(RAND() * 1825), GETDATE()))
-    EXEC processDrinkCart
-        @CustomerFname = @CustomerFname,
-        @CustomerLname = @CustomerLname,
-        @CustomerDOB = @CustomerDOB,
-        @EmployeeFname = @EmployeeFname,
-        @EmployeeLname = @EmployeeLname,
-        @EmployeeDOB = @EmployeeDOB,
-        @OrderDate = @OrderDate
-    SET @DRINK_RUN = @D_RUN
-    SET @RUN = @RUN - 1
-END
-GO
+select EmployeeTypeID, COUNT(EmployeeTypeID) from EMPLOYEE GROUP BY EmployeeTypeID ORDER BY EmployeeTypeID
 
-EXEC cartWrapper
-    @RUN = 300,
-    @DRINK_RUN = 3,
-    @TOPPING_RUN = 2
+select * from EMPLOYEE
