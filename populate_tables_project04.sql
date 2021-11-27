@@ -12,63 +12,81 @@ INSERT INTO DRINK_TYPE (DrinkTypeName, DrinkTypeDescription) VALUES
 -- Populate Drink
 EXEC insertIntoDrink
     @DrinkTypeName = 'Fruit Tea',
-    @DrinkName = 'Kiwi Fruit Tea'
+    @DrinkName = 'Kiwi Fruit Tea',
+    @DrinkCost = 4.50
 EXEC insertIntoDrink
     @DrinkTypeName = 'Fruit Tea',
-    @DrinkName = 'Passionfruit, Orange, and Grapefruit Tea'
+    @DrinkName = 'Passionfruit, Orange, and Grapefruit Tea',
+    @DrinkCost = 4.75
 EXEC insertIntoDrink
     @DrinkTypeName = 'Fruit Tea',
-    @DrinkName = 'Wintermelon Tea'
+    @DrinkName = 'Wintermelon Tea',
+    @DrinkCost = 5.25
 
 EXEC insertIntoDrink
     @DrinkTypeName = 'Milk Tea',
-    @DrinkName = 'Classic Milk Tea'
+    @DrinkName = 'Classic Milk Tea',
+    @DrinkCost = 5.25
 EXEC insertIntoDrink
     @DrinkTypeName = 'Milk Tea',
-    @DrinkName = 'Okinawa Milk Tea'
+    @DrinkName = 'Okinawa Milk Tea',
+    @DrinkCost = 5.75
 EXEC insertIntoDrink
     @DrinkTypeName = 'Milk Tea',
-    @DrinkName = 'Hokkaido Milk Tea'
+    @DrinkName = 'Hokkaido Milk Tea',
+    @DrinkCost = 5.75
 
 EXEC insertIntoDrink
     @DrinkTypeName = 'Fresh Milk',
-    @DrinkName = 'Fresh Milk Tea'
+    @DrinkName = 'Fresh Milk Tea',
+    @DrinkCost = 5
 EXEC insertIntoDrink
     @DrinkTypeName = 'Fresh Milk',
-    @DrinkName = 'Matcha with Fresh Milk'
+    @DrinkName = 'Matcha with Fresh Milk',
+    @DrinkCost = 5.75
 EXEC insertIntoDrink
     @DrinkTypeName = 'Fresh Milk',
-    @DrinkName = 'Cocoa Lover'
+    @DrinkName = 'Cocoa Lover',
+    @DrinkCost = 6
 
 EXEC insertIntoDrink
     @DrinkTypeName = 'Signature',
-    @DrinkName = 'Lime Mojito'
+    @DrinkName = 'Lime Mojito',
+    @DrinkCost = 6.25
 EXEC insertIntoDrink
     @DrinkTypeName = 'Signature',
-    @DrinkName = 'Mango Mojito'
+    @DrinkName = 'Mango Mojito',
+    @DrinkCost = 6.25
 EXEC insertIntoDrink
     @DrinkTypeName = 'Signature',
-    @DrinkName = 'Peach Mojito'
+    @DrinkName = 'Peach Mojito',
+    @DrinkCost = 6.25
 
 EXEC insertIntoDrink
     @DrinkTypeName = 'Brewed Tea',
-    @DrinkName = 'Classic Black Tea'
+    @DrinkName = 'Classic Black Tea',
+    @DrinkCost = 4
 EXEC insertIntoDrink
     @DrinkTypeName = 'Brewed Tea',
-    @DrinkName = 'Classic Green Tea'
+    @DrinkName = 'Classic Green Tea',
+    @DrinkCost = 4.25
 EXEC insertIntoDrink
     @DrinkTypeName = 'Brewed Tea',
-    @DrinkName = 'Classic Oolong Tea'
+    @DrinkName = 'Classic Oolong Tea',
+    @DrinkCost = 4
 
 EXEC insertIntoDrink
     @DrinkTypeName = 'Ice Blended',
-    @DrinkName = 'Taro Ice Blended'
+    @DrinkName = 'Taro Ice Blended',
+    @DrinkCost = 6
 EXEC insertIntoDrink
     @DrinkTypeName = 'Ice Blended',
-    @DrinkName = 'Matcha Red Bean Ice Blended'
+    @DrinkName = 'Matcha Red Bean Ice Blended',
+    @DrinkCost = 6.50
 EXEC insertIntoDrink
     @DrinkTypeName = 'Ice Blended',
-    @DrinkName = 'Thai Tea Ice Blended'
+    @DrinkName = 'Thai Tea Ice Blended',
+    @DrinkCost = 6.25
 
 -- Populate Topping_Type
 INSERT INTO TOPPING_TYPE (ToppingTypeName, ToppingTypeDescription) VALUES 
@@ -174,9 +192,9 @@ INSERT INTO EMPLOYEE_TYPE (EmployeeTypeName, EmployeeTypeDescription, WagePerHou
     ('Barista 5', 'Preparing and serving hot and cold drinks such as coffee, tea, artisan and speciality beverages. Cleaning and sanitising work areas, utensils and equipment. Cleaning service and seating areas.', 15.00),
     ('Barista 6', 'Preparing and serving hot and cold drinks such as coffee, tea, artisan and speciality beverages. Cleaning and sanitising work areas, utensils and equipment. Cleaning service and seating areas.', 15.00)
 
-INSERT INTO TOPPING (ToppingName, ToppingTypeID) VALUES 
-    ('Jelly', 1), ('Boba', 2), ('Mini-Boba', 3), 
-    ('Pudding', 4), ('Grass-Jelly', 5);
+INSERT INTO TOPPING (ToppingName, ToppingTypeID, ToppingCost) VALUES 
+    ('Jelly', 1, .50), ('Boba', 2, 1), ('Mini-Boba', 3, .75), 
+    ('Pudding', 4, 1.25), ('Grass-Jelly', 5, .55);
 
 -- Populate Customer (this takes about 8mins)
 -- Gets the first 300 people from Peeps database // should swap to a insertIntoCustomer Proc, but need getGenderID

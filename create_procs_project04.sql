@@ -207,10 +207,11 @@ GO
 -- insertIntoDrink
 CREATE PROCEDURE insertIntoDrink
     @DrinkTypeName varchar(25),
-    @DrinkName varchar(25)
+    @DrinkName varchar(25),
+    @DrinkCost money
     AS
     DECLARE @DrinkTypeID INT
-    IF @DrinkTypeName IS NULL OR @DrinkName IS NULL
+    IF @DrinkTypeName IS NULL OR @DrinkName IS NULL OR @DrinkCost IS NULL
     BEGIN 
         PRINT 'Parameters for insert drink cannot be null.';
         THROW 99999, 'Parameters for insertion were null', 1;
@@ -224,8 +225,8 @@ CREATE PROCEDURE insertIntoDrink
         THROW 99999, '@DrinkTypeID returned null value.', 1;
     END
     BEGIN TRAN T1
-    INSERT INTO DRINK (DrinkTypeID, DrinkName)
-        VALUES (@DrinkTypeID, @DrinkName)
+    INSERT INTO DRINK (DrinkTypeID, DrinkName, DrinkCost)
+        VALUES (@DrinkTypeID, @DrinkName, @DrinkCost)
     IF @@ERROR <> 0
         BEGIN
             PRINT 'Terminating...'

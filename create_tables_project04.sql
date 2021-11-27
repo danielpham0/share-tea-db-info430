@@ -34,7 +34,8 @@ END
 CREATE TABLE [dbo].[DRINK](
    [DrinkID] [int] NOT NULL IDENTITY(1,1) PRIMARY KEY,
    [DrinkTypeID] [int] NOT NULL FOREIGN KEY REFERENCES DRINK_TYPE(DrinkTypeID),
-   [DrinkName] [varchar](50) NOT NULL
+   [DrinkName] [varchar](50) NOT NULL,
+   [DrinkCost] [money] NOT NULL
 ) ON [PRIMARY]
 GO
 
@@ -265,6 +266,7 @@ CREATE TABLE [dbo].[TOPPING](
    [ToppingID] [int] NOT NULL IDENTITY(1,1) PRIMARY KEY,
    [ToppingTypeID] [int] NOT NULL FOREIGN KEY REFERENCES TOPPING_TYPE(ToppingTypeID),
    [ToppingName] [varchar](100) NOT NULL,
+   [ToppingCost] [money] NOT NULL
 ) ON [PRIMARY]
 GO
 
