@@ -81,10 +81,10 @@ GO
 CREATE PROCEDURE getShiftID
     @STypeID int, 
     @StoreID int, 
-    @Date date, 
+    @ShiftDate datetime, 
     @SID int OUTPUT
 AS
-SET @SID = (SELECT ShiftID FROM SHIFT WHERE ShiftTypeID = @STypeID AND StoreID = @StoreID AND [DateTime] = @Date)
+SET @SID = (SELECT ShiftID FROM SHIFT WHERE ShiftTypeID = @STypeID AND StoreID = @StoreID AND [DateTime] = @ShiftDate)
 GO
 
 -- insertIntoEmployee
@@ -140,11 +140,11 @@ CREATE PROCEDURE insertIntoShiftEmployee
     @DOB date,
     @StoreName varchar(50),
     @ShiftTypeName varchar (50),
-    @Date date
+    @Date datetime
     AS
     DECLARE @EmployeeID INT
     DECLARE @ShiftID INT
-    DECLARE @StoreID INT
+    DECLARE @Store_ID INT
     DECLARE @ShiftTypeID INT
     IF @StoreName IS NULL OR @FName IS NULL OR @LName IS NULL OR @DOB IS NULL OR @ShiftTypeName IS NULL OR @Date IS NULL
     BEGIN 
@@ -174,17 +174,17 @@ CREATE PROCEDURE insertIntoShiftEmployee
 
     EXEC getStoreID
         @SName = @StoreName,
-        @SID = @StoreID OUTPUT
-    IF (@StoreID IS NULL)
+        @SID = @Store_ID OUTPUT
+    IF (@Store_ID IS NULL)
     BEGIN 
         PRINT 'Could not find a Store ID from parameters!';
-        THROW 99999, '@StoreID returned null value.', 1;
+        THROW 99999, '@Store_ID returned null value.', 1;
     END
 
     EXEC getShiftID
         @STypeID = @ShiftTypeID,
-        @StoreID = @StoreID,
-        @Date = @Date,
+        @StoreID = @Store_ID,
+        @ShiftDate = @Date,
         @SID = @ShiftID OUTPUT
     IF (@ShiftID IS NULL)
     BEGIN 

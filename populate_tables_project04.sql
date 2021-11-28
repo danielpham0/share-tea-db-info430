@@ -247,6 +247,56 @@ EXEC WRAPPER_insertIntoEmployee
 
 GO
 
+-- POPULATE SHIFT_EMPLOYEE
+
+CREATE PROCEDURE WRAPPER_insertIntoShiftEmployee
+    @RUN INT
+AS
+
+DECLARE @E_PK INT, @S_PK INT, @ST_PK INT, @SH_PK INT
+DECLARE @E_COUNT INT, @S_COUNT INT, @ST_COUNT INT, @SH_COUNT INT
+DECLARE @E_Fname varchar(50), @E_Lname varchar(50), @E_DOB Date, @S_Name varchar(50), @ST_Name varchar(50), @SH_Date Date
+
+SET @E_COUNT = (SELECT COUNT(*) FROM EMPLOYEE)
+SET @S_COUNT = (SELECT COUNT(*) FROM STORE)
+SET @ST_COUNT = (SELECT COUNT(*) FROM SHIFT_TYPE)
+SET @SH_COUNT = (SELECT COUNT(*) FROM SHIFT)
+
+WHILE @RUN > 0
+BEGIN
+
+SET @E_PK = (SELECT RAND() * @E_COUNT + 1)
+SET @E_Fname = (SELECT EmployeeFName FROM EMPLOYEE WHERE EmployeeID = @E_PK)
+SET @E_Lname = (SELECT EmployeeLName FROM EMPLOYEE WHERE EmployeeID = @E_PK)
+SET @E_DOB = (SELECT EmployeeDOB FROM EMPLOYEE WHERE EmployeeID = @E_PK)
+
+SET @S_PK = (SELECT RAND() * @S_COUNT + 1)
+SET @S_Name = (SELECT StoreName FROM STORE WHERE StoreID = @S_PK)
+
+SET @ST_PK = (SELECT RAND() * @ST_COUNT + 1)
+SET @ST_Name = (SELECT ShiftTypeName FROM SHIFT_TYPE WHERE ShiftTypeID = @ST_PK)
+
+SET @SH_PK = (SELECT RAND() * @SH_COUNT + 1)
+SET @SH_Date = (SELECT [DateTime] FROM SHIFT WHERE ShiftID = @SH_PK)
+
+EXEC insertIntoShiftEmployee
+    @FName = @E_Fname,
+    @LName = @E_Lname,
+    @DOB = @E_DOB,
+    @StoreName = @S_Name,
+    @ShiftTypeName = @ST_Name,
+    @Date = @SH_Date
+
+SET @RUN = @RUN - 1
+
+END
+
+GO
+
+EXEC WRAPPER_insertIntoShiftEmployee
+    @RUN = 3000
+GO
+
 -- POPULATE DRINK_INGREDIENT
 CREATE PROCEDURE WRAPPER_insertDrinkIngredient
     @RUN INT
