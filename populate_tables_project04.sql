@@ -246,6 +246,85 @@ GO
 EXEC WRAPPER_insertIntoEmployee
 
 GO
+
+-- POPULATE DRINK_INGREDIENT
+CREATE PROCEDURE WRAPPER_insertDrinkIngredient
+    @RUN INT
+AS
+
+DECLARE @D_PK INT, @M_PK INT, @I_PK INT
+DECLARE @D_COUNT INT, @M_COUNT INT, @I_COUNT INT
+DECLARE @DName varchar(50), @MName varchar(50), @IName varchar(50), @Quantity decimal(7,2)
+
+SET @D_COUNT = (SELECT COUNT(*) FROM DRINK)
+SET @M_COUNT = (SELECT COUNT(*) FROM MEASUREMENT)
+SET @I_COUNT = (SELECT COUNT(*) FROM INGREDIENT)
+
+WHILE @RUN > 0
+BEGIN
+
+SET @D_PK = (SELECT RAND() * @D_COUNT + 1)
+SET @DName = (SELECT DrinkName FROM DRINK WHERE DrinkID = @D_PK)
+
+SET @M_PK = (SELECT RAND() * @M_COUNT + 1)
+SET @MName = (SELECT MeasurementName FROM MEASUREMENT WHERE MeasurementID = @M_PK)
+
+SET @I_PK = (SELECT RAND() * @I_COUNT + 1)
+SET @IName = (SELECT IngredientName FROM INGREDIENT WHERE IngredientID = @I_PK)
+
+SET @Quantity = (SELECT RAND() * (10-0.1+1) +0.1)
+
+EXEC insertDrinkIngredient
+    @D_Name = @DName,
+    @M_Name = @MName,
+    @I_Name = @IName,
+    @Qty = @Quantity
+
+SET @RUN = @RUN - 1
+
+END
+
+GO
+
+EXEC WRAPPER_insertDrinkIngredient
+    @RUN = 3000
+GO
+
+-- POPULATE INGREDIENT_ALLERGY
+CREATE PROCEDURE WRAPPER_insertIngredientAllergy
+    @RUN INT
+AS
+
+DECLARE @I_PK INT, @A_PK INT
+DECLARE @I_COUNT INT, @A_COUNT INT
+DECLARE @IName varchar(50), @AName varchar(50)
+
+SET @I_COUNT = (SELECT COUNT(*) FROM INGREDIENT)
+SET @A_COUNT = (SELECT COUNT(*) FROM ALLERGY)
+
+WHILE @RUN > 0
+BEGIN
+
+SET @I_PK = (SELECT RAND() * @I_COUNT + 1)
+SET @IName = (SELECT IngredientName FROM INGREDIENT WHERE IngredientID = @I_PK)
+
+SET @A_PK = (SELECT RAND() * @A_COUNT + 1)
+SET @AName = (SELECT AllergyName FROM ALLERGY WHERE AllergyID = @A_PK)
+
+EXEC insertIngredientAllergy
+    @I_Name = @IName,
+    @A_Name = @AName
+
+SET @RUN = @RUN - 1
+
+END
+
+GO
+
+EXEC WRAPPER_insertIngredientAllergy
+    @RUN = 3000
+GO
+
 -- cartWrapper
 --   - RUN: Number of runs and number of times we process a cart
 --   - DRINK_RUN: Number of drinks added to a cart per run

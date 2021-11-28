@@ -269,6 +269,13 @@ CREATE PROCEDURE insertDrinkIngredient
 AS
 DECLARE @D_ID int, @M_ID int, @I_ID int
 
+-- Check Parameters
+IF @D_Name IS NULL OR @M_Name IS NULL OR @I_Name IS NULL OR @Qty IS NULL
+BEGIN 
+    PRINT 'Parameters cannot be null.';
+    THROW 99999, 'Parameters for insertion were null', 1;
+END
+
 EXEC getDrinkID
     @DName = @D_Name,
     @DID = @D_ID OUTPUT
@@ -318,6 +325,13 @@ CREATE PROCEDURE insertIngredientAllergy
     @A_Name varchar(50)
 AS
 DECLARE @I_ID int, @A_ID int
+
+-- Check Parameters
+IF @I_Name IS NULL OR @A_Name IS NULL
+BEGIN 
+    PRINT 'Parameters cannot be null.';
+    THROW 99999, 'Parameters for insertion were null', 1;
+END
 
 EXEC getIngredientID
     @IName = @I_Name,
@@ -432,6 +446,7 @@ BEGIN TRAN T1
         COMMIT TRAN T1 
 
 GO
+
 -- CART PROCEDURES
 
 -- insertIntoDrinkCart
