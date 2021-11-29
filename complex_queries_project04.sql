@@ -154,6 +154,6 @@ GROUP BY StoreName, (CASE
     WHEN MONTH(OrderDate) <= 8 AND MONTH(OrderDate) >= 6
         THEN 'Summer'
     ELSE 'Fall'
-        END), TimeOfDay
+        END), DATEPART(HOUR, OrderDate)
 ORDER BY NumberOfOrders DESC
 GO
