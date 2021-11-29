@@ -561,7 +561,7 @@ CREATE PROCEDURE processDrinkCart
     @EmployeeFname varchar(25),
     @EmployeeLname varchar(25),
     @EmployeeDOB DATE,
-    @OrderDate DATE
+    @OrderDate DATETIME
     AS
     DECLARE @CustomerID INT, @EmployeeID INT, @OrderID INT, @DrinkCartID INT, @DrinkOrderID INT,
         @DrinkID INT, @SizeID INT, @DrinkQuantity INT, @ToppingQuantity DECIMAL(7,2), @ToppingCartID INT,

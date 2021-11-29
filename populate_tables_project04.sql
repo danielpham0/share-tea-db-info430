@@ -289,10 +289,6 @@ END
 
 GO
 
-EXEC WRAPPER_insertIntoShiftEmployee
-    @RUN = 3000
-GO
-
 -- POPULATE DRINK_INGREDIENT
 CREATE PROCEDURE WRAPPER_insertDrinkIngredient
     @RUN INT
@@ -382,7 +378,7 @@ CREATE PROCEDURE cartWrapper
 AS 
 DECLARE @CustomerFname varchar(25), @CustomerLname varchar(25), @CustomerDOB DATE, @CustomerID INT,
     @EmployeeFname varchar(25), @EmployeeLname varchar(25), @EmployeeDOB DATE, @EmployeeID INT,
-    @OrderDate DATE, @ToppingName varchar(25), @ToppingID INT, @Measurement varchar(25), 
+    @OrderDate DATETIME, @ToppingName varchar(25), @ToppingID INT, @Measurement varchar(25), 
     @MeasurementID INT, @ToppingQuantity DECIMAL(7,2), @DrinkName varchar(25), @DrinkID INT,
     @Size varchar(25), @SizeID INT, @DrinkQuantity INT, @DrinkCartID INT,
     @CustomerCount INT = (SELECT COUNT(*) FROM CUSTOMER),
@@ -464,11 +460,10 @@ EXEC cartWrapper
 --     @DRINK_RUN = 2,
 --     @TOPPING_RUN = 3
 
-select * from EMPLOYEE
 GO 
 
 -- BULK INSERT INTO SHIFT DATA 
-ALTER PROCEDURE bulkInsertShiftData
+CREATE PROCEDURE dbo.bulkInsertShiftData
 @Run int 
 AS 
 DECLARE @StoreCount INT = (SELECT COUNT(*) FROM STORE)
@@ -487,10 +482,17 @@ WHILE @Run > 0
         SET @ShiftType = (SELECT ShiftTypeName FROM SHIFT_TYPE WHERE ShiftTypeID = @ST_ID)
         SET @randomDate = CONVERT(DATE, DATEADD(day, (ABS(CHECKSUM(NEWID())) % 5000 * -1), GETDATE()))
 
-        EXEC insertShift
-        @ShiftTypeName = @ShiftType,
-        @StoreName = @Store,
-        @Day = @randomDate
+        IF EXISTS (SELECT ShiftID FROM SHIFT WHERE StoreID = @S_ID AND [DateTime] = @randomDate AND ShiftTypeID = @ST_ID) 
+            BEGIN
+                SET @Run = @Run + 1;
+            END 
+        ELSE 
+            BEGIN 
+                EXEC insertShift
+                @ShiftTypeName = @ShiftType,
+                @StoreName = @Store,
+                @Day = @randomDate;
+            END
 
         SET @Run = @Run - 1
     END
@@ -498,20 +500,9 @@ GO
 
 -- Running with 3000 rows of inserts
 EXEC dbo.bulkInsertShiftData 
-@Run = 3100
+@Run = 3000
 GO 
 
-SELECT * FROM SHIFT_TYPE
-
-SELECT * FROM SHIFT
-ORDER BY [DateTime] ASC
-
-SELECT * FROM SHIFT_EMPLOYEE
-
-SELECT * FROM EMPLOYEE
-
-SELECT COUNT(*) AS [Count] FROM SHIFT
-GROUP BY StoreID, ShiftTypeID, [DateTime]
-HAVING COUNT(*) > 1
-
-DELETE FROM SHIFT
+EXEC WRAPPER_insertIntoShiftEmployee
+    @RUN = 3000
+GO
