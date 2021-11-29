@@ -67,3 +67,64 @@ FROM STORE S
     JOIN TOPPING T ON DTO.ToppingID = T.ToppingID
 GROUP BY DTO.ToppingID, T.ToppingName, S.StoreName
 GO
+
+-- What months are the busiest in terms of the number of customer orders?
+
+CREATE VIEW vwNumOrdersByMonth
+AS
+SELECT StoreName, (CASE
+    WHEN MONTH(OrderDate) = 1
+        THEN 'January'
+    WHEN MONTH(OrderDate) = 2
+        THEN 'February'
+    WHEN MONTH(OrderDate) = 3
+        THEN 'March'
+    WHEN MONTH(OrderDate) = 4
+        THEN 'April'
+    WHEN MONTH(OrderDate) = 5
+        THEN 'May'
+    WHEN MONTH(OrderDate) = 6
+        THEN 'June'
+    WHEN MONTH(OrderDate) = 7
+        THEN 'July'
+    WHEN MONTH(OrderDate) = 8
+        THEN 'August'
+    WHEN MONTH(OrderDate) = 9
+        THEN 'September'
+    WHEN MONTH(OrderDate) = 10
+        THEN 'October'
+    WHEN MONTH(OrderDate) = 11
+        THEN 'November'
+    ELSE 'December'
+        END) AS Month, COUNT(*) AS NumberOfOrders
+FROM [ORDER] O
+JOIN EMPLOYEE E ON E.EmployeeID = O.EmployeeID
+JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
+JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+JOIN STORE ST ON ST.StoreID = S.StoreID
+GROUP BY StoreName, (CASE
+    WHEN MONTH(OrderDate) = 1
+        THEN 'January'
+    WHEN MONTH(OrderDate) = 2
+        THEN 'February'
+    WHEN MONTH(OrderDate) = 3
+        THEN 'March'
+    WHEN MONTH(OrderDate) = 4
+        THEN 'April'
+    WHEN MONTH(OrderDate) = 5
+        THEN 'May'
+    WHEN MONTH(OrderDate) = 6
+        THEN 'June'
+    WHEN MONTH(OrderDate) = 7
+        THEN 'July'
+    WHEN MONTH(OrderDate) = 8
+        THEN 'August'
+    WHEN MONTH(OrderDate) = 9
+        THEN 'September'
+    WHEN MONTH(OrderDate) = 10
+        THEN 'October'
+    WHEN MONTH(OrderDate) = 11
+        THEN 'November'
+    ELSE 'December'
+        END)
+GO
