@@ -45,22 +45,26 @@ GROUP BY (CASE
         END)
 GO 
 
--- How long is the average employee working each week and how much are they getting paid? - LAUREN 
--- *** NEED TO CHECK. WAITING FOR TABLES TO BE ALL POPULATED 
+-- How long is the average employee working at each store each week and what is the average pay per week? 
 WITH 
-CTE_EmployeeTotalHours (totalHours, EmployeeID) AS (
-    SELECT SUM(ST.ShiftTypeEndTime - ST.ShiftTypeBeginTime) AS totalHours, E.EmployeeID
+CTE_EmployeeShiftHours (shiftHours, EmployeeID) AS (
+    SELECT DATEDIFF(HOUR,  ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime) AS shiftHour, E.EmployeeID
     FROM Employee E 
         JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
         JOIN SHIFT S ON S.ShiftID = SE.ShiftID
         JOIN SHIFT_TYPE ST ON ST.ShiftTypeID = S.ShiftTypeID
-    GROUP BY E.EmployeeID),
+    GROUP BY E.EmployeeID, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime),
+CTE_EmployeeTotalHours (totalHours, EmployeeID) AS (
+    SELECT SUM(shiftHours) AS totalHours, EmployeeID
+    FROM CTE_EmployeeShiftHours 
+    GROUP BY EmployeeID 
+),
 CTE_EmployeeTotalPayAndHours (totalPay, totalHours, EmployeeID) AS (
     SELECT (ETH.totalHours * ET.WagePerHour) AS totalPay, ETH.totalHours, E.EmployeeID
     FROM EMPLOYEE E 
         JOIN EMPLOYEE_TYPE ET ON ET.EmployeeTypeID = E.EmployeeTypeID
         JOIN CTE_EmployeeTotalHours ETH ON ETH.EmployeeID = E.EmployeeID 
-    GROUP BY E.EmployeeID, ETH.totalHours
+    GROUP BY E.EmployeeID, ETH.totalHours, ET.WagePerHour
 )
 SELECT S.StoreID, ST.StoreName, AVG(ET.totalHours) AS AverageHours, AVG(ET.totalPay) AS AveragePay
 FROM CTE_EmployeeTotalPayAndHours ET 
@@ -68,6 +72,7 @@ FROM CTE_EmployeeTotalPayAndHours ET
     JOIN SHIFT S ON S.ShiftID = SE.ShiftID
     JOIN STORE ST ON ST.StoreID = S.StoreID
 GROUP BY S.StoreID, ST.StoreName 
+ORDER BY S.StoreID
 
 -- For each employee in the barista employee type, what is the total amount of orders divided by the total hours worked, what is their average orders per hour. 
 
@@ -85,7 +90,6 @@ ORDER BY EmpAvgOrderPHour_Rank ASC
 GO
 
 -- For each store, what drinks are the most popular?
-
 SELECT DO.DrinkID, D.DrinkName, S.StoreName, COUNT(DO.OrderID) AS NumOrders,
 DENSE_RANK() OVER (PARTITION BY S.StoreName ORDER BY COUNT(DO.OrderID) DESC) AS DenseRankDrinkPopularity
 FROM STORE S
@@ -99,7 +103,6 @@ GROUP BY DO.DrinkID, D.DrinkName, S.StoreName
 GO
 
 -- For each store, what toppings are the most popular?
-
 SELECT DTO.ToppingID, T.ToppingName, S.StoreName, COUNT(DTO.DrinkOrderID) AS NumDrinkOrders,
 DENSE_RANK() OVER (PARTITION BY S.StoreName ORDER BY COUNT(DTO.DrinkOrderID) DESC) AS DenseRankToppingPopularity
 FROM STORE S
@@ -122,14 +125,13 @@ FROM DRINK_TOPPING_ORDER DTO
     JOIN [ORDER] O ON  O.OrderID = DO.OrderID 
     JOIN TOPPING T ON T.ToppingID = DTO.ToppingID 
     JOIN DRINK D ON D.DrinkID = DO.DrinkID 
-GROUP BY DTO.DrinkToppingOrderID, D.DrinkName, T.ToppingName, (O.OrderDate)
-
+GROUP BY DTO.DrinkToppingOrderID, D.DrinkName, T.ToppingName, MONTH(O.OrderDate)
 SELECT * 
 FROM #TempDrinkPopularityMonth
 WHERE DenseRankDrinkPopularity < 4
 ORDER BY [Month]
--- In each season, what times of the day are the busiest in terms of the number of customer orders for each store?  (for increased staffing? ) (JONATHAN)
 
+-- In each season, what times of the day are the busiest in terms of the number of customer orders for each store?  (for increased staffing? ) (JONATHAN)
 SELECT StoreName, (CASE
     WHEN MONTH(OrderDate) <= 2 OR MONTH(OrderDate) = 12
         THEN 'Winter'
