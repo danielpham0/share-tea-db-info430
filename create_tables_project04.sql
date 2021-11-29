@@ -46,7 +46,7 @@ BEGIN
 END
 CREATE TABLE [dbo].[EMPLOYEE_TYPE](
    [EmployeeTypeID] [int] NOT NULL IDENTITY(1,1) PRIMARY KEY,
-   [EmployeeTypeName] [varchar](25) NOT NULL,
+   [EmployeeTypeName] [varchar](50) NOT NULL,
    [EmployeeTypeDescription] [varchar](300) NOT NULL,
    [WagePerHour] Decimal(5,2) NOT NULL
 ) ON [PRIMARY]
@@ -59,7 +59,7 @@ BEGIN
 END
 CREATE TABLE [dbo].[GENDER](
    [GenderID] [int] NOT NULL IDENTITY(1,1) PRIMARY KEY,
-   [GenderName] [varchar](25) NOT NULL
+   [GenderName] [varchar](50) NOT NULL
 ) ON [PRIMARY]
 GO
 
@@ -71,8 +71,8 @@ END
 CREATE TABLE [dbo].[CUSTOMER](
    [CustomerID] [int] NOT NULL IDENTITY(1,1) PRIMARY KEY,
    [GenderID] [int] NOT NULL FOREIGN KEY REFERENCES GENDER(GenderID),
-   [CustomerFname] [varchar](25) NOT NULL,
-   [CustomerLname] [varchar](25) NOT NULL,
+   [CustomerFname] [varchar](50) NOT NULL,
+   [CustomerLname] [varchar](50) NOT NULL,
    [CustomerDOB] [Date] NULL
 ) ON [PRIMARY]
 GO

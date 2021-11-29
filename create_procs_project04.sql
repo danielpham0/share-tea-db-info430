@@ -206,8 +206,8 @@ GO
 
 -- insertIntoDrink
 CREATE PROCEDURE insertIntoDrink
-    @DrinkTypeName varchar(25),
-    @DrinkName varchar(25),
+    @DrinkTypeName varchar(50),
+    @DrinkName varchar(50),
     @DrinkCost money
     AS
     DECLARE @DrinkTypeID INT
@@ -451,11 +451,11 @@ GO
 
 -- insertIntoDrinkCart
 CREATE PROCEDURE insertIntoDrinkCart
-    @CustomerFname varchar(25),
-    @CustomerLname varchar(25),
+    @CustomerFname varchar(50),
+    @CustomerLname varchar(50),
     @CustomerDOB DATE,
-    @DrinkName varchar(25),
-    @Size varchar(25),
+    @DrinkName varchar(50),
+    @Size varchar(50),
     @Quantity INT
     AS
     DECLARE @CustomerID INT, @DrinkID INT, @SizeID INT
@@ -510,8 +510,8 @@ GO
 -- insertIntoToppingCart
 CREATE PROCEDURE insertIntoToppingCart
     @DrinkCartID INT,
-    @ToppingName varchar(25),
-    @Measurement varchar(25),
+    @ToppingName varchar(50),
+    @Measurement varchar(50),
     @Quantity DECIMAL(7,2)
     AS
     DECLARE @ToppingID INT, @MeasurementID INT
@@ -555,11 +555,11 @@ GO
 
 -- processDrinkCart
 CREATE PROCEDURE processDrinkCart
-    @CustomerFname varchar(25),
-    @CustomerLname varchar(25),
+    @CustomerFname varchar(50),
+    @CustomerLname varchar(50),
     @CustomerDOB DATE,
-    @EmployeeFname varchar(25),
-    @EmployeeLname varchar(25),
+    @EmployeeFname varchar(50),
+    @EmployeeLname varchar(50),
     @EmployeeDOB DATE,
     @OrderDate DATETIME
     AS
