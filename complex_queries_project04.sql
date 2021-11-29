@@ -140,7 +140,7 @@ SELECT StoreName, (CASE
     WHEN MONTH(OrderDate) <= 8 AND MONTH(OrderDate) >= 6
         THEN 'Summer'
     ELSE 'Fall'
-        END) AS Season, HOUR(OrderDate) AS TimeOfDay, COUNT(*) AS NumberOfOrders
+        END) AS Season, DATEPART(HOUR, OrderDate) AS TimeOfDay, COUNT(*) AS NumberOfOrders
 FROM [ORDER] O
 JOIN EMPLOYEE E ON E.EmployeeID = O.EmployeeID
 JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
