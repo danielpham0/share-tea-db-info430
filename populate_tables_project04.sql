@@ -371,16 +371,16 @@ GO
 --   - RUN: Number of runs and number of times we process a cart
 --   - DRINK_RUN: Number of drinks added to a cart per run
 --   - TOPPING_RUN: Number of toppings per drink that was added
-CREATE PROCEDURE cartWrapper
+ALTER PROCEDURE cartWrapper
 @RUN INT,
 @DRINK_RUN INT,
 @TOPPING_RUN INT
 AS 
-DECLARE @CustomerFname varchar(25), @CustomerLname varchar(25), @CustomerDOB DATE, @CustomerID INT,
-    @EmployeeFname varchar(25), @EmployeeLname varchar(25), @EmployeeDOB DATE, @EmployeeID INT,
-    @OrderDate DATETIME, @ToppingName varchar(25), @ToppingID INT, @Measurement varchar(25), 
-    @MeasurementID INT, @ToppingQuantity DECIMAL(7,2), @DrinkName varchar(25), @DrinkID INT,
-    @Size varchar(25), @SizeID INT, @DrinkQuantity INT, @DrinkCartID INT,
+DECLARE @CustomerFname varchar(50), @CustomerLname varchar(50), @CustomerDOB DATE, @CustomerID INT,
+    @EmployeeFname varchar(50), @EmployeeLname varchar(50), @EmployeeDOB DATE, @EmployeeID INT,
+    @OrderDate DATETIME, @ToppingName varchar(50), @ToppingID INT, @Measurement varchar(50), 
+    @MeasurementID INT, @ToppingQuantity DECIMAL(7,2), @DrinkName varchar(50), @DrinkID INT,
+    @Size varchar(50), @SizeID INT, @DrinkQuantity INT, @DrinkCartID INT,
     @CustomerCount INT = (SELECT COUNT(*) FROM CUSTOMER),
     @EmployeeCount INT = (SELECT COUNT(*) FROM EMPLOYEE),
     @DrinkCount INT = (SELECT COUNT(*) FROM DRINK),
@@ -455,10 +455,16 @@ EXEC cartWrapper
     @DRINK_RUN = 3,
     @TOPPING_RUN = 2 
 
--- EXEC cartWrapper
---     @RUN = 200,
---     @DRINK_RUN = 2,
---     @TOPPING_RUN = 3
+EXEC cartWrapper
+    @RUN = 200,
+    @DRINK_RUN = 2,
+    @TOPPING_RUN = 3
+
+EXEC cartWrapper
+    @RUN = 200,
+    @DRINK_RUN = 2,
+    @TOPPING_RUN = 1
+
 
 GO 
 
