@@ -1,0 +1,8 @@
+-- Creating initial backup
+BACKUP DATABASE INFO_430_Proj_04 TO DISK = 'C:\SQL\INFO_430_Proj_04.BAK'
+
+-- Create differential backup
+BACKUP DATABASE INFO_430_Proj_04 TO DISK = 'C:\SQL\INFO_430_Proj_04.BAK' WITH DIFFERENTIAL
+
+-- Create 2nd differential backup (NOT RUN YET)
+-- BACKUP DATABASE INFO_430_Proj_04 TO DISK = 'C:\SQL\INFO_430_Proj_04.BAK' WITH DIFFERENTIAL
