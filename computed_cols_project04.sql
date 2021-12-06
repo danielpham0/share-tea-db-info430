@@ -92,7 +92,7 @@ CREATE FUNCTION fn_TotalIngredientsDrink (@PK INT)
 RETURNS INT
 AS 
 BEGIN
-DECLARE @RET INT = (SELECT (COUNT(DI.IngredientID))
+DECLARE @RET INT = (SELECT (COUNT(DISTINCT(DI.IngredientID)))
                     FROM DRINK_INGREDIENT DI
                     WHERE DI.DrinkID = @PK
                     GROUP BY DI.DrinkID)
