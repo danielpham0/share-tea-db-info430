@@ -66,7 +66,7 @@ IF EXISTS (SELECT *
 RETURN @RET
 END
 GO
-ALTER TABLE Employee
+ALTER TABLE Employee with nocheck
 ADD CONSTRAINT CK_EmployeeMinimumAge
 CHECK(dbo.fn_checkEmployeeMinimumAge() = 0)
 GO
@@ -87,7 +87,7 @@ IF EXISTS (SELECT *
 RETURN @RET
 END
 GO
-ALTER TABLE EMPLOYEE_TYPE
+ALTER TABLE EMPLOYEE_TYPE with nocheck
 ADD CONSTRAINT CK_EmployeeMinimumWage
 CHECK(dbo.fn_checkEmployeeMinimumWage() = 0)
 GO
@@ -111,7 +111,11 @@ IF EXISTS (SELECT DO.DrinkOrderID, COUNT(DrinkToppingOrderID)
 RETURN @RET
 END
 GO
+<<<<<<< HEAD
 ALTER TABLE DRINK_TOPPING_ORDER
+=======
+ALTER TABLE DRINK_TOPPING_ORDER with nocheck
+>>>>>>> 30c9414c0c20bf016fc2b02ec119deb0532d2e19
 ADD CONSTRAINT CK_NumToppingsSmall
 CHECK(dbo.fn_checkNumToppingsSmall() = 0)
 GO
@@ -131,7 +135,7 @@ IF EXISTS (SELECT *
 RETURN @RET
 END
 GO
-ALTER TABLE [ORDER]
+ALTER TABLE [ORDER] with nocheck
 ADD CONSTRAINT CK_OrderDate
 CHECK(dbo.fn_checkOrderDate() = 0)
 GO
@@ -154,7 +158,7 @@ IF EXISTS (SELECT *
 RETURN @RET
 END
 GO
-ALTER TABLE SHIFT_TYPE
+ALTER TABLE SHIFT_TYPE with nocheck
 ADD CONSTRAINT CK_BeginTime
 CHECK(dbo.fn_checkBeginTime() = 0)
 GO
@@ -177,7 +181,7 @@ IF EXISTS (SELECT *
 RETURN @RET
 END
 GO
-ALTER TABLE SHIFT_TYPE
+ALTER TABLE SHIFT_TYPE with nocheck
 ADD CONSTRAINT CK_EndTime
 CHECK(dbo.fn_checkEndTime() = 0)
 GO
