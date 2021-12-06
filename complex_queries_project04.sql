@@ -75,7 +75,6 @@ GROUP BY S.StoreID, ST.StoreName
 ORDER BY S.StoreID
 
 -- For each employee in the barista employee type, what is the total amount of orders divided by the total hours worked, what is their average orders per hour. 
-
 SELECT E.EmployeeID, E.EmployeeFName, E.EmployeeLName, ET.EmployeeTypeName, (COUNT(O.OrderID) / SUM(DATEDIFF(HOUR, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime))) AS [Avg. Order Per Hour],
     RANK() OVER(PARTITION BY E.EmployeeID ORDER BY (COUNT(O.OrderID) / SUM(DATEDIFF(HOUR, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime))) DESC) EmpAvgOrderPHour_Rank
 FROM EMPLOYEE E 
@@ -84,7 +83,7 @@ JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
 JOIN SHIFT S ON S.ShiftID = SE.ShiftID
 JOIN SHIFT_TYPE ST ON ST.ShiftTypeID = S.ShiftTypeID
 JOIN [ORDER] O ON O.EmployeeID = E.EmployeeID
-WHERE ET.EmployeeTypeName = 'Barista'
+WHERE ET.EmployeeTypeName LIKE 'Barista%'
 GROUP BY E.EmployeeID, E.EmployeeFName, E.EmployeeLName, ET.EmployeeTypeName
 ORDER BY EmpAvgOrderPHour_Rank ASC
 GO
@@ -116,22 +115,21 @@ FROM STORE S
 GROUP BY DTO.ToppingID, T.ToppingName, S.StoreName
 GO
 
--- What are the top 3 drink and boba combinations for each month across all shareTea locations 
-SELECT MONTH(O.OrderDate) AS [Month],  D.DrinkName, T.ToppingName, COUNT(DTO.DrinkToppingOrderID) AS countDrinks,
-RANK() OVER (ORDER BY COUNT(DTO.DrinkToppingOrderID) DESC) AS DenseRankDrinkPopularity
-INTO #TempDrinkPopularityMonth
-FROM DRINK_TOPPING_ORDER DTO 
-    JOIN DRINK_ORDER DO ON DO.DrinkOrderID = DTO.DrinkOrderID
-    JOIN [ORDER] O ON  O.OrderID = DO.OrderID 
-    JOIN TOPPING T ON T.ToppingID = DTO.ToppingID 
-    JOIN DRINK D ON D.DrinkID = DO.DrinkID 
-GROUP BY DTO.DrinkToppingOrderID, D.DrinkName, T.ToppingName, MONTH(O.OrderDate)
+-- What are the top 3 drink combinations for each month across all shareTea locations 
 SELECT * 
-FROM #TempDrinkPopularityMonth
-WHERE DenseRankDrinkPopularity < 4
-ORDER BY [Month]
+FROM (
+    SELECT MONTH(O.OrderDate) AS [Month],  D.DrinkName, COUNT(D.DrinkName) AS countDrinks,
+    RANK() OVER (PARTITION BY MONTH(O.OrderDate) ORDER BY COUNT(D.DrinkName) DESC) AS DenseRankDrinkPopularity
+    FROM DRINK_TOPPING_ORDER DTO 
+        JOIN DRINK_ORDER DO ON DO.DrinkOrderID = DTO.DrinkOrderID
+        JOIN [ORDER] O ON  O.OrderID = DO.OrderID 
+        JOIN DRINK D ON D.DrinkID = DO.DrinkID 
+    GROUP BY D.DrinkName, MONTH(O.OrderDate)
+) AS tempTable
+WHERE tempTable.DenseRankDrinkPopularity < 4
+ORDER BY countDrinks DESC 
 
--- In each season, what times of the day are the busiest in terms of the number of customer orders for each store?  (for increased staffing? ) (JONATHAN)
+-- In each season, what times of the day are the busiest in terms of the number of customer orders for each store?  (for increased staffing? )
 SELECT StoreName, (CASE
     WHEN MONTH(OrderDate) <= 2 OR MONTH(OrderDate) = 12
         THEN 'Winter'

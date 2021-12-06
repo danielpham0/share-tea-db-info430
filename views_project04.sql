@@ -143,3 +143,92 @@ GROUP BY StoreName, (CASE
     ELSE 'December'
         END)
 GO
+
+-- In each season, what times of the day are the busiest in terms of the number of customer orders for each store?  (for increased staffing? ) 
+CREATE VIEW vwSeasonalBusyStores
+AS
+SELECT StoreName, (CASE
+    WHEN MONTH(OrderDate) <= 2 OR MONTH(OrderDate) = 12
+        THEN 'Winter'
+    WHEN MONTH(OrderDate) <= 5 AND MONTH(OrderDate) >= 3
+        THEN 'Spring'
+    WHEN MONTH(OrderDate) <= 8 AND MONTH(OrderDate) >= 6
+        THEN 'Summer'
+    ELSE 'Fall'
+        END) AS Season, DATEPART(HOUR, OrderDate) AS TimeOfDay, COUNT(*) AS NumberOfOrders
+FROM [ORDER] O
+JOIN EMPLOYEE E ON E.EmployeeID = O.EmployeeID
+JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
+JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+JOIN STORE ST ON ST.StoreID = S.StoreID
+GROUP BY StoreName, (CASE
+    WHEN MONTH(OrderDate) <= 2 OR MONTH(OrderDate) = 12
+        THEN 'Winter'
+    WHEN MONTH(OrderDate) <= 5 AND MONTH(OrderDate) >= 3
+        THEN 'Spring'
+    WHEN MONTH(OrderDate) <= 8 AND MONTH(OrderDate) >= 6
+        THEN 'Summer'
+    ELSE 'Fall'
+        END), DATEPART(HOUR, OrderDate)
+GO
+
+-- What are the top 3 drink combinations for each month across all shareTea locations 
+CREATE VIEW vwTopDrinkComboPerMonth
+AS
+SELECT * 
+FROM (
+    SELECT MONTH(O.OrderDate) AS [Month],  D.DrinkName, COUNT(D.DrinkName) AS countDrinks,
+    RANK() OVER (PARTITION BY MONTH(O.OrderDate) ORDER BY COUNT(D.DrinkName) DESC) AS DenseRankDrinkPopularity
+    FROM DRINK_TOPPING_ORDER DTO 
+        JOIN DRINK_ORDER DO ON DO.DrinkOrderID = DTO.DrinkOrderID
+        JOIN [ORDER] O ON  O.OrderID = DO.OrderID 
+        JOIN DRINK D ON D.DrinkID = DO.DrinkID 
+    GROUP BY D.DrinkName, MONTH(O.OrderDate)
+) AS tempTable
+WHERE tempTable.DenseRankDrinkPopularity < 4
+GO
+
+-- For each employee in the barista employee type, what is the total amount of orders divided by the total hours worked, what is their average orders per hour. 
+CREATE VIEW vwEmpoyeeAverageHours
+AS
+SELECT E.EmployeeID, E.EmployeeFName, E.EmployeeLName, ET.EmployeeTypeName, (COUNT(O.OrderID) / SUM(DATEDIFF(HOUR, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime))) AS [Avg. Order Per Hour],
+    RANK() OVER(PARTITION BY E.EmployeeID ORDER BY (COUNT(O.OrderID) / SUM(DATEDIFF(HOUR, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime))) DESC) EmpAvgOrderPHour_Rank
+FROM EMPLOYEE E 
+JOIN EMPLOYEE_TYPE ET ON ET.EmployeeTypeID = E.EmployeeTypeID
+JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
+JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+JOIN SHIFT_TYPE ST ON ST.ShiftTypeID = S.ShiftTypeID
+JOIN [ORDER] O ON O.EmployeeID = E.EmployeeID
+WHERE ET.EmployeeTypeName LIKE 'Barista%'
+GROUP BY E.EmployeeID, E.EmployeeFName, E.EmployeeLName, ET.EmployeeTypeName
+GO
+
+-- How long is the average employee working at each store each week and what is the average pay per week? 
+CREATE VIEW vwAverageWorkingEmployee
+AS
+WITH 
+CTE_EmployeeShiftHours (shiftHours, EmployeeID) AS (
+    SELECT DATEDIFF(HOUR,  ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime) AS shiftHour, E.EmployeeID
+    FROM Employee E 
+        JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = E.EmployeeID
+        JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+        JOIN SHIFT_TYPE ST ON ST.ShiftTypeID = S.ShiftTypeID
+    GROUP BY E.EmployeeID, ST.ShiftTypeBeginTime, ST.ShiftTypeEndTime),
+CTE_EmployeeTotalHours (totalHours, EmployeeID) AS (
+    SELECT SUM(shiftHours) AS totalHours, EmployeeID
+    FROM CTE_EmployeeShiftHours 
+    GROUP BY EmployeeID 
+),
+CTE_EmployeeTotalPayAndHours (totalPay, totalHours, EmployeeID) AS (
+    SELECT (ETH.totalHours * ET.WagePerHour) AS totalPay, ETH.totalHours, E.EmployeeID
+    FROM EMPLOYEE E 
+        JOIN EMPLOYEE_TYPE ET ON ET.EmployeeTypeID = E.EmployeeTypeID
+        JOIN CTE_EmployeeTotalHours ETH ON ETH.EmployeeID = E.EmployeeID 
+    GROUP BY E.EmployeeID, ETH.totalHours, ET.WagePerHour
+)
+SELECT S.StoreID, ST.StoreName, AVG(ET.totalHours) AS AverageHours, AVG(ET.totalPay) AS AveragePay
+FROM CTE_EmployeeTotalPayAndHours ET 
+    JOIN SHIFT_EMPLOYEE SE ON SE.EmployeeID = ET.EmployeeID
+    JOIN SHIFT S ON S.ShiftID = SE.ShiftID
+    JOIN STORE ST ON ST.StoreID = S.StoreID
+GROUP BY S.StoreID, ST.StoreName 
