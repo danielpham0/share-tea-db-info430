@@ -1,12 +1,27 @@
 USE INFO_430_Proj_04
 GO
 
+-- Get the top 1 to 20 percentile of customers for customers, 
+-- above the age of 18, based on the total number of orders they have made.
+CREATE VIEW vwDrinksByRankCustomerOrders
+AS
+WITH 
+RankedCustomerOrders(CustomerID, Fname, Lname, OrderCount, OrderPercentile)
+AS (SELECT C.CustomerID, C.CustomerFname, C.CustomerLname,
+    COUNT(*) as OrderCount,
+    NTILE(100) OVER (ORDER BY COUNT(*) DESC) as OrderPercentile
+FROM CUSTOMER C
+    JOIN [ORDER] O on C.CustomerID = O.CustomerID
+    WHERE C.CustomerDOB < DATEADD(YEAR, -18, GETDATE())
+GROUP BY C.CustomerID, C.CustomerFname, C.CustomerLname)
+SELECT * FROM RankedCustomerOrders WHERE OrderPercentile BETWEEN 1 AND 20
+GO
+
 -- Sort ordered drinks into cases based on number of toppings ordered and size
 -- 1) Above 2 toppings and size large -- Extravagant
 -- 2) Between 1 or 2 toppings and size large or medium -- Average
 -- 4) No toppings and a size small or medium -- Frugal
 -- 5) Other
-
 CREATE VIEW vwDrinksByToppingCountAndSize
 AS
 SELECT (CASE
