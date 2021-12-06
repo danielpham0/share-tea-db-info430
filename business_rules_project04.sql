@@ -101,6 +101,8 @@ DECLARE @RET INTEGER = 0
 IF EXISTS (SELECT DO.DrinkOrderID, COUNT(DrinkToppingOrderID)
             FROM DRINK_ORDER DO 
             JOIN DRINK_TOPPING_ORDER DTO ON DTO.DrinkOrderID = DO.DrinkOrderID
+            JOIN SIZE S ON S.SizeID = DO.SizeID
+            WHERE S.SizeName = 'Small'
             GROUP BY DO.DrinkOrderID
             HAVING COUNT(DrinkToppingOrderID) > 3)
             BEGIN
@@ -109,7 +111,7 @@ IF EXISTS (SELECT DO.DrinkOrderID, COUNT(DrinkToppingOrderID)
 RETURN @RET
 END
 GO
-ALTER TABLE DRINK_ORDER_TOPPING
+ALTER TABLE DRINK_TOPPING_ORDER
 ADD CONSTRAINT CK_NumToppingsSmall
 CHECK(dbo.fn_checkNumToppingsSmall() = 0)
 GO
