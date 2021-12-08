@@ -508,7 +508,7 @@ WHILE @Run > 0
 GO 
 
 -- Running with 3000 rows of inserts
-EXEC dbo.bulkInsertShiftData 
+EXEC bulkInsertShiftData 
 @Run = 5000
 GO 
 
