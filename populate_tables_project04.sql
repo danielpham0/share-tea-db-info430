@@ -130,7 +130,6 @@ INSERT INTO SHIFT_TYPE (ShiftTypeName, ShiftTypeDescription, ShiftTypeBeginTime,
     ('Closing','The closing shift to meet the evening rush and clean up the store', '7PM', '11PM'),
     ('FullDay','Overseaing operations during operating hours for the full day', '12PM', '10PM')
 
-
 INSERT INTO MEASUREMENT (MeasurementName) VALUES 
     ('Ounce'),
     ('Pounds'),
@@ -284,9 +283,7 @@ EXEC insertIntoShiftEmployee
     @Date = @SH_Date
 
 SET @RUN = @RUN - 1
-
 END
-
 GO
 
 -- POPULATE DRINK_INGREDIENT
@@ -329,7 +326,7 @@ END
 GO
 
 EXEC WRAPPER_insertDrinkIngredient
-    @RUN = 3000
+    @RUN = 5000
 GO
 
 -- POPULATE INGREDIENT_ALLERGY
@@ -358,13 +355,11 @@ EXEC insertIngredientAllergy
     @A_Name = @AName
 
 SET @RUN = @RUN - 1
-
 END
-
 GO
 
 EXEC WRAPPER_insertIngredientAllergy
-    @RUN = 3000
+    @RUN = 5000
 GO
 
 -- cartWrapper
@@ -477,7 +472,7 @@ EXEC cartWrapper
 GO 
 
 -- BULK INSERT INTO SHIFT DATA 
-CREATE PROCEDURE dbo.bulkInsertShiftData
+CREATE PROCEDURE bulkInsertShiftData
 @Run int 
 AS 
 DECLARE @StoreCount INT = (SELECT COUNT(*) FROM STORE)
@@ -513,10 +508,10 @@ WHILE @Run > 0
 GO 
 
 -- Running with 3000 rows of inserts
-EXEC dbo.bulkInsertShiftData 
-@Run = 3000
+EXEC bulkInsertShiftData 
+@Run = 5000
 GO 
 
 EXEC WRAPPER_insertIntoShiftEmployee
-    @RUN = 3000
+    @RUN = 5000
 GO

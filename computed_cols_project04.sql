@@ -92,7 +92,7 @@ CREATE FUNCTION fn_TotalIngredientsDrink (@PK INT)
 RETURNS INT
 AS 
 BEGIN
-DECLARE @RET INT = (SELECT (COUNT(DI.IngredientID))
+DECLARE @RET INT = (SELECT (COUNT(DISTINCT(DI.IngredientID)))
                     FROM DRINK_INGREDIENT DI
                     WHERE DI.DrinkID = @PK
                     GROUP BY DI.DrinkID)
@@ -108,15 +108,16 @@ CREATE FUNCTION fn_TotalDrinkCount (@PK INT)
 RETURNS INT 
 AS 
 BEGIN 
-DECLARE @RET INT = (SELECT COUNT(*)
-                    FROM DRINK_ORDER 
-                    WHERE DrinkOrderID = @PK
-                    GROUP BY DrinkOrderID) 
+DECLARE @RET INT = (SELECT SUM(DO.Quantity)
+                    FROM [ORDER] O
+                        JOIN DRINK_ORDER DO ON DO.OrderID = O.OrderID
+                    WHERE O.OrderID = @PK
+                    GROUP BY O.OrderID) 
 RETURN @RET 
 END
 GO 
-ALTER TABLE DRINK_ORDER 
-ADD TotalDrinkCount AS (dbo.fn_TotalDrinkCount (DrinkOrderID))
+ALTER TABLE [ORDER]
+ADD TotalDrinkCount AS (dbo.fn_TotalDrinkCount (OrderID))
 GO 
 
 -- Total Toppings in each drink
@@ -125,12 +126,13 @@ RETURNS INT
 AS 
 BEGIN 
 DECLARE @RET INT = (SELECT COUNT(*)
-                    FROM DRINK_TOPPING_ORDER  
-                    WHERE DrinkToppingOrderID = @PK
-                    GROUP BY DrinkToppingOrderID) 
+                    FROM DRINK_ORDER DO 
+                        JOIN DRINK_TOPPING_ORDER DTO ON DTO.DrinkOrderID = DO.DrinkOrderID
+                    WHERE Do.DrinkOrderID = @PK
+                    GROUP BY Do.DrinkOrderID) 
 RETURN @RET 
 END
 GO 
-ALTER TABLE DRINK_TOPPING_ORDER 
-ADD TotalToppingCount AS (dbo.fn_TotalToppingInDrink (DrinkToppingOrderID))
+ALTER TABLE DRINK_ORDER 
+ADD TotalToppingCount AS (dbo.fn_TotalToppingInDrink (DrinkOrderID))
 GO 
