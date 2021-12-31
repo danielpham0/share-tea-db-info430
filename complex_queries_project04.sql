@@ -18,7 +18,6 @@ SELECT * FROM RankedCustomerOrders WHERE OrderPercentile BETWEEN 1 AND 20 ORDER 
 -- 2) Between 1 or 2 toppings and size large or medium -- Average
 -- 4) No toppings and a size small or medium -- Frugal
 -- 5) Other
-
 SELECT (CASE
     WHEN ToppingCount >= 3 AND SizeName = 'Large'
         THEN 'Extravagant'
